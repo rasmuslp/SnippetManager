@@ -1,0 +1,71 @@
+<div id="auth-content" class="container">
+	<div class="row">
+		<div class="col-xs-12 col-md-4 col-md-offset-4">
+			<div class="panel panel-default">
+				<div class="panel-body">
+					<form role="login" name="authForm" ng-submit="authCtrl.submit(authForm.$valid)" novalidate>
+						<div class="form-group">
+							<div class="input-group">
+								<span class="input-group-addon"><i class="fa fa-envelope-o fa-fw"></i></span>
+								<input class="form-control" name="email" type="email" placeholder="Email address" ng-model="authCtrl.user.email" ng-model-options="{ debounce : { 'default' : 500, blur : 0 } }" required email-available-validator="authCtrl.signup">
+							</div>
+							<div class="form-sub">
+								<div class="text-danger" ng-messages="authForm.email.$error" ng-if="authForm.$submitted || authForm.email.$touched">
+									<div ng-message="required">You did not enter an email address</div>
+									<div ng-message="email">This does not look like an email address</div>
+									<div ng-message="emailUnique">This email address is already registered</div>
+								</div>
+							</div>
+						</div>
+						<div class="form-group">
+							<div class="input-group">
+								<span class="input-group-addon"><i class="fa fa-key fa-fw"></i></span>
+								<input class="form-control" name="password" type="password" placeholder="Password" ng-model="authCtrl.user.password" required minlength="8">
+							</div>
+						</div>
+						<div class="form-sub">
+							<div class="text-danger" ng-messages="authForm.password.$error" ng-if="authForm.$submitted || authForm.password.$touched">
+								<div ng-message="required">You did not enter a password</div>
+								<div ng-message="minlength">The password must be at least 8 characters</div>
+							</div>
+						</div>
+						<div class="form-group" ng-if="authCtrl.signup">
+							<div class="input-group">
+								<span class="input-group-addon"><i class="fa fa-key fa-fw"></i></span>
+								<input class="form-control" name="passwordConfirm" type="password" placeholder="Confirm password" ng-model="authCtrl.user.passwordConfirm" required minlength="8" compare-to-validator="authCtrl.user.password">
+							</div>
+							<div class="form-sub">
+								<div class="text-danger" ng-messages="authForm.passwordConfirm.$error" ng-if="authForm.$submitted || authForm.passwordConfirm.$touched">
+									<div ng-message="required">You did not enter a password</div>
+									<div ng-message="compareTo">The passwords did not match</div>
+								</div>
+							</div>
+						</div>
+						<div class="form-group">
+							<button type="button" data-toggle="button" class="btn btn-default btn-block" ng-model="authCtrl.user.remember">Remember me</button>
+						</div>
+						<button class="btn btn-lg btn-primary btn-block" ng-if="authCtrl.signup" type="submit">Sign up</button>
+						<div ng-if="!authCtrl.signup">
+							<button class="btn btn-lg btn-primary btn-block" type="submit">Login</button>
+							<div id="social-auth" class="text-center" ng-show="false">
+								or login with one of the following
+								<ul>
+									<li><a ng-click="authCtrl.login3rdParty('facebook')"><i class="fa fa-3x fa-facebook-official"></i></a></li>
+									<li><a ng-click="authCtrl.login3rdParty('google')"><i class="fa fa-3x fa-google"></i></a></li>
+									<li><a ng-click="authCtrl.login3rdParty('twitter')"><i class="fa fa-3x fa-twitter"></i></a></li>
+								</ul>
+							</div>
+						</div>
+					</form>
+				</div>
+			</div>
+			<div ng-if="authCtrl.signup" class="text-center">
+				<a ui-sref="auth.login">Login to your account</a>
+			</div>
+			<div ng-if="!authCtrl.signup" class="text-center">
+				<small>Don't have an account ?</small>
+				<button class="btn btn-default btn-block" type="button" ui-sref="auth.signup">Go create one!</button>
+			</div>
+		</div>
+	</div>
+</div>

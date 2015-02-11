@@ -1,0 +1,94 @@
+@import "../vendor/bootstrap/less/variables.less";
+
+@gray-lightest: lighten(@gray-base, 97.25%);
+@border-color: darken(@gray-lightest, 6.5%);
+
+.logo {
+  max-width: 90%;
+  margin: 20px;
+
+  .navbar-brand & {
+    display: inline;
+    margin: 2px;
+    width: 44px;
+  }
+}
+
+.navbar {
+  // Fallback for old browsers
+  background: #000;
+  background: rgba(0,0,0,0.8);
+  border: 0;
+}
+
+#auth-content {
+  padding: 20px 0;
+
+  .form-group {
+
+    .form-sub {
+      text-align: center;
+      margin-top: 10px;
+    }
+  }
+
+  #social-auth {
+    margin-top: 20px;
+
+    text-align: center;
+
+    ul {
+      margin: 10px 0 0 0;
+      padding: 0;
+      list-style: none;
+
+      li {
+        display: inline;
+        margin: 10px;
+      }
+    }
+  }
+}
+
+#welcome {
+  position: relative;
+
+  min-height: calc(~"100vh - 50px");
+  background-size: cover;
+
+  box-shadow: 0px 1px 250px 0px @gray inset;
+
+  .by-line {
+    position: absolute;
+    margin: 20px;
+    bottom: 0;
+    left: 0;
+    right: 0;
+  }
+}
+
+#site-content {
+  padding-top: 50px;
+}
+
+#home-content {
+  padding: 20px 0;
+}
+
+.fa-inactive {
+  li.active & {
+    display: none;
+  }
+}
+
+.fa-active {
+  display: none;
+
+  li.active & {
+    display: inline-block;
+  }
+}
+
+.no-margin {
+  margin: 0;
+}
