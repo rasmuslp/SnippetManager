@@ -1,7 +1,7 @@
 (function () {
   'use strict';
 
-  angular.module('home', ['auth.service'])
+  angular.module('home', ['auth.service', 'user'])
 
   .config(function($urlRouterProvider, $stateProvider) {
     $stateProvider
@@ -15,6 +15,9 @@
       resolve: {
         requireAuth: function(requireAuth) {
           return requireAuth();
+        },
+        user: function(UserService) {
+          return UserService.getUserData();
         }
       }
     })
@@ -26,8 +29,8 @@
     });
   })
 
-  .controller('HomeController', function() {
-
+  .controller('HomeController', function(user) {
+    this.user = user;
   });
 
 }());
