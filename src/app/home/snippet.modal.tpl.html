@@ -1,0 +1,36 @@
+<div class="modal-header">
+  <button type="button" class="close" aria-label="Close" ng-click="snippetCtrl.close()"><span aria-hidden="true">&times;</span></button>
+  <h4 ng-if="!snippetCtrl.edit" class="modal-title">New snippt</h4>
+  <h4 ng-if="snippetCtrl.edit" class="modal-title">Edit snippt</h4>
+</div>
+
+<div class="modal-body">
+
+  <div class="form-group">
+    <label class="control-label">Title</label>
+    <input class="form-control" ng-model="snippetCtrl.snippet.title"><br />
+  </div>
+
+  <div class="form-group">
+    <label class="control-label" for="textarea">Add placeholder</label>
+    <input class="form-control" ng-model="snippetCtrl.newVariable"><br />
+    <button ng-click="snippetCtrl.addVariable()" class="btn btn-primary" ng-disabled="snippetCtrl.newVariable.length === 0">Add</button>
+  </div>
+
+  <div class="form-group">
+    <label class="control-label">Placeholders:</label>
+    <button class="btn btn-default btn-sm" ng-repeat="variable in snippetCtrl.snippet.variables">{{variable.tag}}</button>
+  </div>
+
+  <div class="form-group">
+    <label class="control-label" for="textarea">Content</label>
+    <textarea class="form-control" ng-model="snippetCtrl.snippet.content" rows="15" id="textarea" name="textarea">default text</textarea>
+  </div>
+
+</div>
+
+<div class="modal-footer">
+  <button type="button" class="btn btn-default" ng-click="snippetCtrl.cancel()">Cancel</button>
+  <button ng-if="!snippetCtrl.edit" type="button" class="btn btn-primary" ng-click="snippetCtrl.addSnippet()" ng-disabled="snippetCtrl.snippet.variables.length === 0 || snippetCtrl.snippet.content.length === 0 || snippetCtrl.snippet.title.length === 0">Add</button>
+  <button ng-if="snippetCtrl.edit" type="button" class="btn btn-primary" ng-click="snippetCtrl.saveSnippet()" ng-disabled="snippetCtrl.snippet.variables.length === 0 || snippetCtrl.snippet.content.length === 0 || snippetCtrl.snippet.title.length === 0">Save</button>
+</div>

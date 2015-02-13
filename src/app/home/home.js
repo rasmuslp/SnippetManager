@@ -1,7 +1,7 @@
 (function () {
   'use strict';
 
-  angular.module('home', ['auth.service', 'user'])
+  angular.module('home', ['auth.service', 'user', 'ui.bootstrap'])
 
   .config(function($urlRouterProvider, $stateProvider) {
     $stateProvider
@@ -34,58 +34,129 @@
     return function(text, values) {
       var newText = text;
       for (var value in values) {
-        newText = newText.replace(new RegExp(value, 'g'), values[value])
+        if(values.hasOwnProperty(value)) {
+          newText = newText.replace(new RegExp(value, 'g'), values[value]);
+        }
       }
       return newText;
-    }
+    };
   })
 
-  .controller('HomeController', function(user) {
+  .controller('HomeController', function(user, $modal) {
     this.user = user;
 
-    this.user.$loaded()
-    .then(function() {
-      user.snippets = user.snippets || [];
-    });
+    this.openSnippet = function(index) {
+      $modal.open({
+        templateUrl: 'app/home/snippet.modal.tpl.html',
+        controller: 'SnippetController',
+        controllerAs: 'snippetCtrl',
+        resolve: {
+          user: function () {
+            return user;
+          },
+          snippetIndex: function() {
+            return index;
+          }
+        }
+      });
+    };
+
+    this.deleteSnippet = function(snippetIndex) {
+      this.user.snippets.splice(snippetIndex, 1);
+      this.user.$save();
+    };
+
+  })
+
+  .controller('SnippetController', function(user, snippetIndex, $scope, $modalInstance) {
+    this.edit = angular.isDefined(snippetIndex);
+
+    this.snippet = {
+      variables : []
+    };
+
+    if (this.edit) {
+      this.snippet = user.snippets[snippetIndex];
+    }
 
     this.newVariable = '';
 
     this.addVariable = function () {
-      console.log('Add variable');
-      this.newSnippet.variables = this.newSnippet.variables || [];
-      this.newSnippet.variables.push({
+      this.snippet.variables = this.snippet.variables || [];
+      this.snippet.variables.push({
         tag: this.newVariable
       });
 
       this.newVariable = '';
     };
 
-    //this.snippets = [{content: 'This is some content', variables: [{tag: 'navn'},{tag: 'title'},{tag: 'test'}, {tag: 'mother'}]}, {content: 'This is some other content', variables: [{tag: 'navn'},{tag: 'title'},{tag: 'test'}]}]
-    this.newSnippet = {
-      variables : []
+    this.addSnippet = function () {
+      if (angular.isUndefined(user.snippets)) {
+        user.snippets = [];
+      }
+
+      user.snippets.push(this.snippet);
+      user.$save();
+      $modalInstance.close();
     };
 
     this.saveSnippet = function () {
-      console.log('Save snippet');
-
-      if (angular.isUndefined(this.user.snippets)) {
-        this.user.snippets = [];
-      }
-
-      this.user.snippets.push(this.newSnippet);
-      this.user.$save();
+      user.snippets[snippetIndex] = this.snippet;
+      user.$save().then(function() {
+        console.log('saved');
+      }, function(error) {
+        console.log('Error:', error);
+      });
+      $modalInstance.close();
     };
 
-    this.deleteSnippet = function(snippet) {
-      var index = this.user.snippets.indexOf(snippet);
-      console.log(index);
-      if (index != -1) {
-        console.log('I am in');
-        this.user.snippets.splice(index, 1);
-        this.user.$save();
-      }
-    }
+    this.close = function() {
+      $modalInstance.close();
+    };
 
+    this.cancel = function() {
+      $modalInstance.dismiss();
+    };
+  })
+
+  .controller('EditSnippetController', function(user, snippet, $scope, $modalInstance) {
+    this.edit = true;
+
+    var self = this;
+    var index = -1;
+    user.$loaded().then(function() {
+      index = user.snippets.indexOf(snippet);
+      self.snippet = user.snippets[index];
+    });
+
+    this.newVariable = '';
+
+    this.addVariable = function () {
+      this.snippet.variables = this.snippet.variables || [];
+      this.snippet.variables.push({
+        tag: this.newVariable
+      });
+
+      this.newVariable = '';
+    };
+
+    this.saveSnippet = function () {
+      if (angular.isUndefined(user.snippets)) {
+        user.snippets = [];
+      }
+
+      user.snippets.push(this.snippet);
+      user.$save();
+      $modalInstance.close();
+    };
+
+    this.close = function() {
+      $modalInstance.close();
+    };
+
+    this.cancel = function() {
+      $modalInstance.dismiss();
+    };
   });
 
 }());
