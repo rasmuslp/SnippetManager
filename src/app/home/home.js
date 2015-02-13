@@ -1,7 +1,7 @@
 (function () {
   'use strict';
 
-  angular.module('home', ['auth.service', 'user', 'ui.bootstrap', 'ngClipboard'])
+  angular.module('home', ['auth.service', 'user', 'ui.bootstrap'])
 
   .config(function($urlRouterProvider, $stateProvider) {
     $stateProvider
@@ -27,22 +27,6 @@
       controller: 'HomeController',
       controllerAs: 'homeCtrl'
     });
-  })
-
-  .config(function(ngClipProvider) {
-    ngClipProvider.setPath('assets/ZeroClipboard.swf');
-  })
-
-  .filter('newlines', function () {
-    return function(text, values) {
-      var newText = text;
-      for (var value in values) {
-        if(values.hasOwnProperty(value)) {
-          newText = newText.replace(new RegExp(value, 'g'), values[value]);
-        }
-      }
-      return newText;
-    };
   })
 
   .controller('HomeController', function(user, $modal) {

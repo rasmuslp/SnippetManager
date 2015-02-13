@@ -9,16 +9,19 @@
       <div class="by-line">by <a target="_blank" href="http://ljungmann.net">Ljungmann</a> & <a target="_blank" href="http://ydefeldt.com">Ydefeldt</a></div>
       <div class="row">
       <div class="col-md-4"></div>
-      <div class="col-md-4">
-        <div class="form-group">
-        <input ng-model="exampleName" class="form-control" placeholder="Your Name">
-        <input ng-model="exampleCompany" class="form-control" placeholder="You Company">
-      </div>
+      <div class="col-md-4" ng-init="welcomeCtrl.values = {}">
+        <div class="form-group" ng-repeat="variable in welcomeCtrl.snippet.variables">
+          <input class="form-control" placeholder="{{variable.placeholder}}" ng-model="welcomeCtrl.values[variable.tag]">
+        </div>
       </div>
     </div>
     </div>
     <!-- <div class="lead text-center">Hello <b>{{exampleName}}</b>, I heard that you work for {{exampleCompany}}, and because of that I want to offer you, this tool where it’s possible to make variables in text. Do you understand {{yourname}}? It’s like templates for text, made very simple.</div> -->
-      <div class="lead text-center col-md-8 col-md-offset-2">Hello <b>{{exampleName}}</b>! I can see that you are working for <b>{{exampleCompany}}</b> and I thought you might be interested in our service, which makes it possible to use varaibles in text.<br /><br /><br/> <b>{{exampleName}}</b> when did I last tell you that you were awesome?
+      <div class="lead text-center col-md-8 col-md-offset-2">
+        <div ng-bind-html="welcomeCtrl.html((welcomeCtrl.snippet | tagFill: welcomeCtrl.values))">
+        </div>
+        <br>
+        <button class="btn btn-default" clip-copy="welcomeCtrl.snippet.content | tagFill: welcomeCtrl.values">Copy to clipboard <i class="fa fa-clipboard"></i></button>
       </div>
     </div>
   </div>

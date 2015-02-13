@@ -21,10 +21,10 @@
           </div>
         </div>
         <div class="col-md-8">
-          {{snippet.content | newlines: homeCtrl.values}}
+          {{snippet | tagFill: homeCtrl.values}}
         </div>
         <div class="col-md-1">
-          <button class="btn btn-default btn-sm" clip-copy="snippet.content | newlines: homeCtrl.values"><i class="fa fa-clipboard"></i> Copy</button>
+          <button class="btn btn-default btn-sm" clip-copy="snippet.content | tagFill: homeCtrl.values"><i class="fa fa-clipboard"></i> Copy</button>
         </div>
       </div>
     </div>

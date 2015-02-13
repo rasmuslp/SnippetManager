@@ -2,7 +2,11 @@
 
 (function () {
 
-	angular.module('smApp', ['templates', 'ui.router', 'auth', 'welcome', 'home'])
+	angular.module('smApp', ['templates', 'ui.router', 'auth', 'welcome', 'home', 'ngClipboard'])
+
+	.config(function(ngClipProvider) {
+		ngClipProvider.setPath('assets/ZeroClipboard.swf');
+	})
 
 	.run(function($rootScope) {
 		$rootScope.$on('$stateChangeError', function(event, toState, toParams, fromState, fromParams, error) {

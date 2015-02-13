@@ -1,6 +1,6 @@
 (function () {
 	'use strict';
 
-	angular.module('common', ['common.config', 'common.firebase.factory']);
+	angular.module('common', ['common.config', 'common.firebase.factory', 'common.filters']);
 
 }());
