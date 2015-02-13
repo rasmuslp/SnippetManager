@@ -1,24 +1,33 @@
 <div class="container">
+  <button type="button" class="btn btn-success center-block" data-toggle="modal" data-target="#newSnippet">
+    New snippt
+  </button>
+  <hr />
   <div class="row">
-    <div class="col-md-4">
-      <button type="button" class="btn btn-default btn-sm" data-toggle="modal" data-target="#myModal">
-        New snippt
-      </button>
+    <div class="col-md-2">
+      <div ng-repeat="snippet in homeCtrl.user.snippets">
+        <label class="checkbox"><input type="checkbox" ng-init="snippet.enabled = true" ng-model="snippet.enabled">{{snippet.title}}</label>
+        <button class="btn btn-danger btn-sm" ng-click="homeCtrl.deleteSnippet(snippet)"><span class="glyphicon glyphicon-trash"></button>
+      </div>
     </div>
-    <div class="col-md-4">
-      <div class="snippet" ng-repeat="snippet in homeCtrl.user.snippets">
-        <div class="form-group" ng-repeat="variable in snippet.variables">
-          <!-- <label for="variable.key"></label> -->
-          <input class="form-control" placeholder="{{variable.tag}}">
+
+    <div class="col-md-10">
+      <div class="snippet row" ng-repeat="snippet in homeCtrl.user.snippets" ng-show="snippet.enabled" ng-init="homeCtrl.values = {}">
+        <div class="col-md-3">
+          <div class="form-group" ng-repeat="variable in snippet.variables">
+            <input class="form-control" placeholder="{{variable.tag}}" ng-model="homeCtrl.values[variable.tag]">
+          </div>
         </div>
-        {{snippet.content}}
+        <div class="col-md-9">
+          {{snippet.content | newlines: homeCtrl.values}}
+        </div>
       </div>
     </div>
     <div class="col-md-4"></div>
   </div>
 
   <!-- Modal -->
-  <div class="modal fade" id="myModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+  <div class="modal fade" id="newSnippet" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
     <div class="modal-dialog">
       <div class="modal-content">
         <div class="modal-header">
@@ -40,18 +49,19 @@
           </div>
 
           <div class="form-group">
-            <label class="control-label" for="textarea">Content</label>
-            <textarea class="form-control" ng-model="homeCtrl.newSnippet.content" id="textarea" name="textarea">default text</textarea>
+            <label class="control-label">Title</label>
+            <input class="form-control" ng-model="homeCtrl.newSnippet.title"><br />
           </div>
-          {{homeCtrl.user}}
-          {{homeCtrl.user.snippets}}
-          <b>newSnippet:</b>
-          {{homeCtrl.newSnippet}}
+
+          <div class="form-group">
+            <label class="control-label" for="textarea">Content</label>
+            <textarea class="form-control" ng-model="homeCtrl.newSnippet.content" rows="15" id="textarea" name="textarea">default text</textarea>
+          </div>
 
         </div>
         <div class="modal-footer">
           <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
-          <button type="button" class="btn btn-primary" ng-click="homeCtrl.saveSnippet()">Save</button>
+          <button type="button" class="btn btn-primary" ng-click="homeCtrl.saveSnippet()" ng-disabled="homeCtrl.newSnippet.variables == 0 || homeCtrl.newSnippet.content.length == 0 || homeCtrl.newSnippet.title == 0">Save</button>
         </div>
       </div>
     </div>

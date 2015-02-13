@@ -29,6 +29,17 @@
     });
   })
 
+
+  .filter('newlines', function () {
+    return function(text, values) {
+      var newText = text;
+      for (var value in values) {
+        newText = newText.replace(new RegExp(value, 'g'), values[value])
+      }
+      return newText;
+    }
+  })
+
   .controller('HomeController', function(user) {
     this.user = user;
 
@@ -64,6 +75,16 @@
       this.user.snippets.push(this.newSnippet);
       this.user.$save();
     };
+
+    this.deleteSnippet = function(snippet) {
+      var index = this.user.snippets.indexOf(snippet);
+      console.log(index);
+      if (index != -1) {
+        console.log('I am in');
+        this.user.snippets.splice(index, 1);
+        this.user.$save();
+      }
+    }
 
   });
 
