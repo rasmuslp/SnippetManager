@@ -1,9 +1,9 @@
 (function() {
 	'use strict';
 
-	angular.module('common.firebase.factory', [])
+	angular.module('common.firebase.factory', ['firebase'])
 
-	.factory('FirebaseFactory', function(FB, $q) {
+	.factory('FirebaseFactory', function(FB, $q, $firebase) {
 		var baseRef = new Firebase(FB);
 
 		var ret = {
@@ -19,6 +19,12 @@
 				});
 
 				return deferred.promise;
+			},
+			
+			getAsObject: function(path) {
+				var ref = baseRef.child(path);
+
+				return $firebase(ref).$asObject();
 			},
 
 			set: function(path, object) {

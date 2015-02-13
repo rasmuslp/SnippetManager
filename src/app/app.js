@@ -5,8 +5,8 @@
 	angular.module('smApp', ['templates', 'ui.router', 'auth', 'welcome', 'home'])
 
 	.run(function($rootScope) {
-		$rootScope.$on('$stateChangeError', function(event) {
-			console.log(event);
+		$rootScope.$on('$stateChangeError', function(event, toState, toParams, fromState, fromParams, error) {
+			console.log('State change error: %o', error);
 		});
 	});
 

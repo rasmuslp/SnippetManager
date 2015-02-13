@@ -17,7 +17,7 @@
           return requireAuth();
         },
         user: function(UserService) {
-          return UserService.getUserData();
+          return UserService.getData();
         }
       }
     })
@@ -30,42 +30,41 @@
   })
 
   .controller('HomeController', function(user) {
-
     this.user = user;
-
-    var self = this;
 
     this.user.$loaded()
     .then(function() {
-      self.user.snippets = self.user.snippets || [];
+      user.snippets = user.snippets || [];
     });
+
+    this.newVariable = '';
+
+    this.addVariable = function () {
+      console.log('Add variable');
+      this.newSnippet.variables = this.newSnippet.variables || [];
+      this.newSnippet.variables.push({
+        tag: this.newVariable
+      });
+
+      this.newVariable = '';
+    };
+
     //this.snippets = [{content: 'This is some content', variables: [{tag: 'navn'},{tag: 'title'},{tag: 'test'}, {tag: 'mother'}]}, {content: 'This is some other content', variables: [{tag: 'navn'},{tag: 'title'},{tag: 'test'}]}]
-    this.currentSnippet = {
+    this.newSnippet = {
       variables : []
     };
 
-    this.addVariable = function () {
-      this.currentSnippet.variables.push({
-        tag: this.newPlaceholder
+    this.saveSnippet = function () {
+      console.log('Save snippet');
+
+      if (angular.isUndefined(this.user.snippets)) {
+        this.user.snippets = [];
       }
-    )
-    console.log("test")
-    this.newPlaceholder = "";
-  };
 
-  this.saveSnippet = function () {
-    console.log("MOTHFKDSJLKDSMSDKLFD");
-    this.user.snippets.push({
-      content: this.newContent
-    });
+      this.user.snippets.push(this.newSnippet);
+      this.user.$save();
+    };
 
-    this.user.$save();
-  };
-
-
-
-});
-
-
+  });
 
 }());

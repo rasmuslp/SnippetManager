@@ -2,7 +2,7 @@
   'use strict';
 
   angular.module('user', ['common', 'auth'])
-  .factory('UserService', function($q, FB, FirebaseFactory, AuthService, $firebase) {
+  .factory('UserService', function($q, FB, FirebaseFactory, AuthService) {
     var base = '/users/';
 
     var defaultUser = {
@@ -28,11 +28,8 @@
     var service = {
       user: angular.copy(defaultUser),
 
-      getUserData: function() {
-        var authData = AuthService.getAuthSync();
-        service.user.data = $firebase(new Firebase(FB + base + authData.uid)).$asObject();
-
-        return service.user.data;
+      getData: function() {
+        return FirebaseFactory.getAsObject(base + AuthService.uid());
       }
     };
 
