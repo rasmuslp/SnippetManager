@@ -117,46 +117,6 @@
     this.cancel = function() {
       $modalInstance.dismiss();
     };
-  })
-
-  .controller('EditSnippetController', function(user, snippet, $scope, $modalInstance) {
-    this.edit = true;
-
-    var self = this;
-    var index = -1;
-    user.$loaded().then(function() {
-      index = user.snippets.indexOf(snippet);
-      self.snippet = user.snippets[index];
-    });
-
-    this.newVariable = '';
-
-    this.addVariable = function () {
-      this.snippet.variables = this.snippet.variables || [];
-      this.snippet.variables.push({
-        tag: this.newVariable
-      });
-
-      this.newVariable = '';
-    };
-
-    this.saveSnippet = function () {
-      if (angular.isUndefined(user.snippets)) {
-        user.snippets = [];
-      }
-
-      user.snippets.push(this.snippet);
-      user.$save();
-      $modalInstance.close();
-    };
-
-    this.close = function() {
-      $modalInstance.close();
-    };
-
-    this.cancel = function() {
-      $modalInstance.dismiss();
-    };
   });
 
 }());
