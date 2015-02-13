@@ -14,7 +14,7 @@
         var variable = snippet.variables[variableIndex];
         if (values.hasOwnProperty(variable.tag) && values[variable.tag].length > 0) {
           newText = newText.replace(new RegExp(variable.tag, 'g'), values[variable.tag]);
-        } else {
+        } else if (variable.placeholder && variable.placeholder.length > 0) {
           newText = newText.replace(new RegExp(variable.tag, 'g'), '(' + variable.placeholder + ')');
         }
       }
