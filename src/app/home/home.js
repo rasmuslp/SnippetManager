@@ -1,7 +1,7 @@
 (function () {
   'use strict';
 
-  angular.module('home', ['auth.service', 'user', 'ui.bootstrap'])
+  angular.module('home', ['auth.service', 'user', 'ui.bootstrap', 'ngClipboard'])
 
   .config(function($urlRouterProvider, $stateProvider) {
     $stateProvider
@@ -29,6 +29,9 @@
     });
   })
 
+  .config(function(ngClipProvider) {
+    ngClipProvider.setPath('assets/ZeroClipboard.swf');
+  })
 
   .filter('newlines', function () {
     return function(text, values) {

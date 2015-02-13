@@ -92,6 +92,19 @@ gulp.task('bower:fonts', function() {
   .pipe(gulp.dest(config.build.fonts));
 });
 
+gulp.task('bower:swf', function() {
+  var bowerFiles = mainBowerFiles();
+
+  if(!bowerFiles.length){
+    // No main files found. Skipping....
+    return;
+  }
+
+  return gulp.src(bowerFiles)
+  .pipe(filterByExtension('swf'))
+  .pipe(gulp.dest(config.build.assets));
+});
+
 gulp.task('bower:extra:css', function() {
   return gulp.src(config.vendor.css)
   .pipe(sourcemaps.init({debug: true}))
@@ -109,7 +122,7 @@ gulp.task('fontReferenceFix', function() {
 });
 
 gulp.task('bower', function() {
-  runSequence('bower:js', 'bower:css', 'bower:fonts', 'bower:extra:css', 'bower:custom');
+  runSequence('bower:js', 'bower:css', 'bower:fonts', 'bower:swf', 'bower:extra:css', 'bower:custom');
 });
 
 gulp.task('lint', function() {

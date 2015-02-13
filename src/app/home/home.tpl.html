@@ -1,13 +1,15 @@
 <div class="container">
-  <button type="button" class="btn btn-success center-block" ng-click="homeCtrl.openSnippet()">New snippt</button>
+  <button type="button" class="btn btn-success center-block" ng-click="homeCtrl.openSnippet()"><i class="fa fa-plus-circle"></i> Snippt</button>
   <hr/>
   <div class="row">
 
     <div class="col-md-2">
       <div ng-repeat="(key, snippet) in homeCtrl.user.snippets">
-        <label class="checkbox"><input type="checkbox" ng-init="snippet.enabled = true" ng-model="snippet.enabled">{{snippet.title}}</label>
-        <button class="btn btn-default btn-sm" ng-click="homeCtrl.openSnippet(key)"><span class="glyphicon glyphicon-pencil"></span></button>
-        <button class="btn btn-danger btn-sm" ng-click="homeCtrl.deleteSnippet(key)"><span class="glyphicon glyphicon-trash"></span></button>
+        <label><input type="checkbox" ng-init="snippet.enabled = true" ng-model="snippet.enabled">{{snippet.title}}</label>
+        <span class="pull-right">
+          <button class="btn btn-default btn-xs" ng-click="homeCtrl.openSnippet(key)"><i class="fa fa-pencil"></i></button>
+          <button class="btn btn-danger btn-xs" ng-click="homeCtrl.deleteSnippet(key)"><i class="fa fa-trash-o"></i></button>
+        </span>
       </div>
     </div>
 
@@ -18,8 +20,11 @@
             <input class="form-control" placeholder="{{variable.tag}}" ng-model="homeCtrl.values[variable.tag]">
           </div>
         </div>
-        <div class="col-md-9">
+        <div class="col-md-8">
           {{snippet.content | newlines: homeCtrl.values}}
+        </div>
+        <div class="col-md-1">
+          <button class="btn btn-default btn-sm" clip-copy="snippet.content | newlines: homeCtrl.values"><i class="fa fa-clipboard"></i> Copy</button>
         </div>
       </div>
     </div>
