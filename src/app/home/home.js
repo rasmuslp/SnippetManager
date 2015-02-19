@@ -1,7 +1,7 @@
 (function () {
   'use strict';
 
-  angular.module('home', ['auth.service', 'user', 'ui.bootstrap'])
+  angular.module('home', ['auth.service', 'common', 'user', 'ui.bootstrap'])
 
   .config(function($urlRouterProvider, $stateProvider) {
     $stateProvider
@@ -29,7 +29,7 @@
     });
   })
 
-  .controller('HomeController', function(snippets, $modal) {
+  .controller('HomeController', function(snippets, $modal, $filter) {
     this.snippets = snippets;
 
     this.openSnippet = function(id) {
@@ -55,6 +55,13 @@
       });
     };
 
+    this.copyAsMarkdown = function(snippet) {
+      return $filter('tagFill')(snippet, this.values);
+    };
+
+    this.copyAsHTML = function(snippet) {
+      return $filter('ngMarkdown')(this.copyAsMarkdown(snippet));
+    };
   })
 
   .controller('SnippetController', function(snippets, snippetId, $scope, $modalInstance) {

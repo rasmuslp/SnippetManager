@@ -23,7 +23,7 @@
         <div class="col-md-8" ng-bind-html="snippet | tagFill: homeCtrl.values | ngMarkdown | html">
         </div>
         <div class="col-md-1">
-          <button class="btn btn-default btn-sm" clip-copy="snippet.content | tagFill: homeCtrl.values"><i class="fa fa-clipboard"></i> Copy</button>
+          <button class="btn btn-default btn-sm" clip-copy="homeCtrl.copyAsHTML(snippet)" clip-copy-mime-type="text/html"><i class="fa fa-clipboard"></i> Copy to clipboard</button>
         </div>
       </div>
     </div>
