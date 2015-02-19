@@ -46,7 +46,7 @@
           }
         }
       });
-    };
+    };u
 
     this.deleteSnippet = function(snippetIndex) {
       this.user.snippets.splice(snippetIndex, 1);

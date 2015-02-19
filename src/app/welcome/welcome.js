@@ -1,7 +1,7 @@
 (function () {
   'use strict';
 
-  angular.module('welcome', ['menu'])
+  angular.module('welcome', ['menu', 'ngSanitize','btford.markdown'])
 
   .config(function($stateProvider) {
     $stateProvider
