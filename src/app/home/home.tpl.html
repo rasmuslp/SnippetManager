@@ -1,11 +1,14 @@
 <div class="container">
-  <button type="button" class="btn btn-success center-block" ng-click="homeCtrl.openSnippet()"><i class="fa fa-plus-circle"></i> Snippt</button>
+  <div class="text-center">
+    <button type="button" class="btn btn-success" ng-click="homeCtrl.openSnippet()"><i class="fa fa-plus-circle"></i> Snippt</button>
+    <button class="btn btn-default" clip-copy="homeCtrl.copyEnabledAsHTML(snippet)" clip-copy-mime-type="text/html"><i class="fa fa-clipboard"></i> Copy to clipboard</button>
+  </div>
   <hr/>
   <div class="row">
 
     <div class="col-md-2">
-      <div ng-repeat="snippet in homeCtrl.snippets">
-        <label><input type="checkbox" ng-init="snippet.enabled = true" ng-model="snippet.enabled">{{snippet.title}}</label>
+      <div style="margin-top:10px;" ng-repeat="snippet in homeCtrl.snippets">
+        <label><input type="checkbox" ng-init="snippet.enabled = true" ng-model="snippet.enabled"><div class="checkboxText" style="float:right; margin-left: 5px;">{{snippet.title}}</div></label>
         <span class="pull-right">
           <button class="btn btn-default btn-xs" ng-click="homeCtrl.openSnippet(snippet.$id)"><i class="fa fa-pencil"></i></button>
           <button class="btn btn-danger btn-xs" ng-click="homeCtrl.deleteSnippet(snippet)"><i class="fa fa-trash-o"></i></button>
@@ -15,8 +18,7 @@
 
     <div class="col-md-10">
       <div class="text-center">
-      <button class="btn btn-default btn-sm" clip-copy="homeCtrl.copyEnabledAsHTML(snippet)" clip-copy-mime-type="text/html"><i class="fa fa-clipboard"></i> Copy to clipboard</button>
-    </div>
+      </div>
       <div class="snippet row" ng-repeat="snippet in homeCtrl.snippets" ng-show="snippet.enabled" ng-init="homeCtrl.values = {}">
         <div class="col-md-3">
           <div class="form-group" ng-repeat="variable in snippet.variables">
