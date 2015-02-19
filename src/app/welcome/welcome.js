@@ -13,10 +13,10 @@
     });
   })
 
-  .controller('WelcomeController', function($sce) {
+  .controller('WelcomeController', function($filter) {
 
     this.snippet = {
-      content: 'Hello <b>NAME</b>! I can see that you are working for <b>COMPANY</b> and I thought you might be interested in our service, which makes it possible to use varaibles in text.<br /><br /><br/> <b>NAME</b> when did I last tell you that you were awesome?',
+      content: 'Hello <b>NAME</b>! I can see that you are working for <b>COMPANY</b> and I thought you might be interested in our service. It makes it possible to use variables in snippets of text. It even supports Markdown and copy to clipboard as HTML.<br /><br /><br/> <b>NAME</b> when did I last tell you that you were awesome?',
       variables: [{
         tag: 'NAME',
         placeholder:'Your name'
@@ -26,9 +26,12 @@
       }]
     };
 
+    this.copyAsMarkdown = function(snippet) {
+      return $filter('tagFill')(snippet, this.values);
+    };
 
-    this.html = function(html) {
-      return $sce.trustAsHtml(html);
+    this.copyAsHTML = function(snippet) {
+      return $filter('ngMarkdown')(this.copyAsMarkdown(snippet));
     };
   });
 
