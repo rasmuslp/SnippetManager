@@ -25,6 +25,8 @@ var ignore = require('gulp-ignore');
 var print = require('gulp-print');
 var ngAnnotate = require('gulp-ng-annotate');
 var plumber = require('gulp-plumber');
+var ftp = require('gulp-ftp');
+var gutil = require('gulp-util');
 
 var filterByExtension = function(extension){
   return filter(function(file){
@@ -214,6 +216,14 @@ gulp.task('build', function() {
 
 gulp.task('default', function() {
   return runSequence('clean', ['build']);
+});
+
+gulp.task('deploy', function () {
+  var ftpConfig = require('./ftp.config.js');
+
+  return gulp.src(config.build.base + '/**/*')
+  .pipe(ftp(ftpConfig.settings))
+  .pipe(gutil.noop());
 });
 
 gulp.task('travis', ['build'], function() {});
