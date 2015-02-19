@@ -16,14 +16,18 @@
       </div>
     </div>
 
-    <div class="col-md-10">
-      <div class="snippet row" ng-repeat="snippet in homeCtrl.snippets" ng-show="snippet.enabled" ng-init="homeCtrl.values = {}">
-        <div class="col-md-3">
-          <div class="form-group" ng-repeat="variable in snippet.variables">
-            <input class="form-control" placeholder="{{variable.tag}}" ng-model="homeCtrl.values[variable.tag]">
-          </div>
+    <div class="col-md-3" ng-init="homeCtrl.values = {}">
+      <div class="snippet" ng-repeat="snippet in homeCtrl.snippets" ng-show="snippet.enabled">
+        <p class="lead" style="margin-bottom: 5px;">{{snippet.title}}</p>
+        <div class="form-group" ng-repeat="variable in snippet.variables">
+          <input class="form-control" placeholder="{{variable.tag}}" ng-model="homeCtrl.values[variable.tag]">
         </div>
-        <div class="col-md-9" ng-bind-html="snippet | tagFill: homeCtrl.values | ngMarkdown | html">
+      </div>
+    </div>
+
+    <div class="col-md-7">
+      <div ng-repeat="snippet in homeCtrl.snippets" ng-show="snippet.enabled">
+        <div ng-bind-html="snippet | tagFill: homeCtrl.values | ngMarkdown | html">
         </div>
       </div>
     </div>
