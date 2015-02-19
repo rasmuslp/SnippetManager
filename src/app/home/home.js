@@ -16,8 +16,8 @@
         requireAuth: function(requireAuth) {
           return requireAuth();
         },
-        user: function(UserService) {
-          return UserService.getData();
+        snippets: function(UserService) {
+          return UserService.getSnippets();
         }
       }
     })
@@ -29,41 +29,47 @@
     });
   })
 
-  .controller('HomeController', function(user, $modal) {
-    this.user = user;
+  .controller('HomeController', function(snippets, $modal) {
+    this.snippets = snippets;
 
-    this.openSnippet = function(index) {
+    this.openSnippet = function(id) {
       $modal.open({
         templateUrl: 'app/home/snippet.modal.tpl.html',
         controller: 'SnippetController',
         controllerAs: 'snippetCtrl',
         resolve: {
-          user: function () {
-            return user;
+          snippets: function () {
+            return snippets;
           },
-          snippetIndex: function() {
-            return index;
+          snippetId: function() {
+            return id;
           }
         }
       });
     };
 
-    this.deleteSnippet = function(snippetIndex) {
-      this.user.snippets.splice(snippetIndex, 1);
-      this.user.$save();
+    this.deleteSnippet = function(snippet) {
+      snippets.$remove(snippet)
+      .catch(function(error) {
+        console.warn('HomeController [delete] Could not delete snippet. Snippet was ' + snippet + ' and error was ' + error.code);
+      });
     };
 
   })
 
-  .controller('SnippetController', function(user, snippetIndex, $scope, $modalInstance) {
-    this.edit = angular.isDefined(snippetIndex);
+  .controller('SnippetController', function(snippets, snippetId, $scope, $modalInstance) {
+    this.edit = angular.isDefined(snippetId);
 
     this.snippet = {
       variables : []
     };
 
     if (this.edit) {
-      this.snippet = user.snippets[snippetIndex];
+      this.snippet = snippets.$getRecord(snippetId);
+      if (this.snippet === null) {
+        console.warn('SnippetController [modal] Snippet not available. ID was ' + snippetId);
+        $modalInstance.close();
+      }
     }
 
     this.newVariable = '';
@@ -78,23 +84,18 @@
     };
 
     this.addSnippet = function () {
-      if (angular.isUndefined(user.snippets)) {
-        user.snippets = [];
-      }
-
-      user.snippets.push(this.snippet);
-      user.$save();
+      snippets.$add(this.snippet);
       $modalInstance.close();
     };
 
     this.saveSnippet = function () {
-      user.snippets[snippetIndex] = this.snippet;
-      user.$save().then(function() {
-        console.log('saved');
-      }, function(error) {
-        console.log('Error:', error);
+      snippets.$save(this.snippet)
+      .catch(function(error) {
+        console.log('EditController [submit] could not save item: ' + error);
+      })
+      .finally(function() {
+        $modalInstance.close();
       });
-      $modalInstance.close();
     };
 
     this.close = function() {

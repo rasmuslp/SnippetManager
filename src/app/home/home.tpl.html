@@ -4,24 +4,23 @@
   <div class="row">
 
     <div class="col-md-2">
-      <div ng-repeat="(key, snippet) in homeCtrl.user.snippets">
+      <div ng-repeat="snippet in homeCtrl.snippets">
         <label><input type="checkbox" ng-init="snippet.enabled = true" ng-model="snippet.enabled">{{snippet.title}}</label>
         <span class="pull-right">
-          <button class="btn btn-default btn-xs" ng-click="homeCtrl.openSnippet(key)"><i class="fa fa-pencil"></i></button>
-          <button class="btn btn-danger btn-xs" ng-click="homeCtrl.deleteSnippet(key)"><i class="fa fa-trash-o"></i></button>
+          <button class="btn btn-default btn-xs" ng-click="homeCtrl.openSnippet(snippet.$id)"><i class="fa fa-pencil"></i></button>
+          <button class="btn btn-danger btn-xs" ng-click="homeCtrl.deleteSnippet(snippet)"><i class="fa fa-trash-o"></i></button>
         </span>
       </div>
     </div>
 
     <div class="col-md-10">
-      <div class="snippet row" ng-repeat="snippet in homeCtrl.user.snippets" ng-show="snippet.enabled" ng-init="homeCtrl.values = {}">
+      <div class="snippet row" ng-repeat="snippet in homeCtrl.snippets" ng-show="snippet.enabled" ng-init="homeCtrl.values = {}">
         <div class="col-md-3">
           <div class="form-group" ng-repeat="variable in snippet.variables">
             <input class="form-control" placeholder="{{variable.tag}}" ng-model="homeCtrl.values[variable.tag]">
           </div>
         </div>
-        <div class="col-md-8">
-          <ng-markdown-preview ng-model="snippet | tagFill: homeCtrl.values"></ng-markdown-preview>
+        <div class="col-md-8" ng-bind-html="snippet | tagFill: homeCtrl.values | ngMarkdown | html">
         </div>
         <div class="col-md-1">
           <button class="btn btn-default btn-sm" clip-copy="snippet.content | tagFill: homeCtrl.values"><i class="fa fa-clipboard"></i> Copy</button>

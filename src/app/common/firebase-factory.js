@@ -7,6 +7,22 @@
 		var baseRef = new Firebase(FB);
 
 		var ret = {
+			delete: function(path) {
+				var deferred = $q.defer();
+
+				var ref = baseRef.child(path);
+				ref.set({}, function(error) {
+					if (error) {
+						console.warn('FirebaseFactory [delete] of ' + path + ' failed: %o', error);
+						deferred.reject('FirebaseFactory [delete] of ' + path + ' failed with error code ' + error.code);
+					} else {
+						deferred.resolve();
+					}
+				});
+
+				return deferred.promise;
+			},
+
 			getOnce: function(path) {
 				var deferred = $q.defer();
 
@@ -20,7 +36,13 @@
 
 				return deferred.promise;
 			},
-			
+
+			getAsArray: function(path) {
+				var ref = baseRef.child(path);
+
+				return $firebase(ref).$asArray();
+			},
+
 			getAsObject: function(path) {
 				var ref = baseRef.child(path);
 
