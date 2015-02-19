@@ -62,6 +62,17 @@
     this.copyAsHTML = function(snippet) {
       return $filter('ngMarkdown')(this.copyAsMarkdown(snippet));
     };
+
+    this.copyEnabledAsHTML = function() {
+      var text = '';
+      angular.forEach(snippets, function(snippet) {
+        if (snippet.enabled) {
+          text += this.copyAsHTML(snippet);
+        }
+      }, this);
+
+      return text;
+    };
   })
 
   .controller('SnippetController', function(snippets, snippetId, $scope, $modalInstance) {
