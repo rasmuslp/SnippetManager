@@ -21,7 +21,7 @@
           </div>
         </div>
         <div class="col-md-8">
-          {{snippet | tagFill: homeCtrl.values}}
+          <ng-markdown-preview ng-model="snippet | tagFill: homeCtrl.values"></ng-markdown-preview>
         </div>
         <div class="col-md-1">
           <button class="btn btn-default btn-sm" clip-copy="snippet.content | tagFill: homeCtrl.values"><i class="fa fa-clipboard"></i> Copy</button>

@@ -8,26 +8,18 @@
       <div class="lead">Generate content from your snippets</div>
       <div class="by-line">by <a target="_blank" href="http://ljungmann.net">Ljungmann</a> & <a target="_blank" href="http://ydefeldt.com">Ydefeldt</a></div>
       <div class="row">
-      <div class="col-md-4"></div>
-      <div class="col-md-4" ng-init="welcomeCtrl.values = {}">
-        <div class="form-group" ng-repeat="variable in welcomeCtrl.snippet.variables">
-          <input class="form-control" placeholder="{{variable.placeholder}}" ng-model="welcomeCtrl.values[variable.tag]">
+        <div class="col-md-4 col-md-offset-4" ng-init="welcomeCtrl.values = {}">
+          <div class="form-group" ng-repeat="variable in welcomeCtrl.snippet.variables">
+            <input class="form-control" placeholder="{{variable.placeholder}}" ng-model="welcomeCtrl.values[variable.tag]">
+          </div>
         </div>
       </div>
     </div>
-    </div>
-    <!-- <div class="lead text-center">Hello <b>{{exampleName}}</b>, I heard that you work for {{exampleCompany}}, and because of that I want to offer you, this tool where it’s possible to make variables in text. Do you understand {{yourname}}? It’s like templates for text, made very simple.</div> -->
-      <div class="lead text-center col-md-8 col-md-offset-2">
-        <div ng-bind-html="welcomeCtrl.html((welcomeCtrl.snippet | tagFill: welcomeCtrl.values))">
-        </div>
-        <br>
-            <bft-marked>
-              _morten_
-             #Markdown directive
-             *It works!*
-           </bft-marked>
-        <!-- <button class="btn btn-default" clip-copy="welcomeCtrl.snippet.content | tagFill: welcomeCtrl.values">Copy to clipboard <i class="fa fa-clipboard"></i></button> -->
+    <div class="lead text-center col-md-8 col-md-offset-2">
+      <div ng-bind-html="welcomeCtrl.html((welcomeCtrl.snippet | tagFill: welcomeCtrl.values))">
       </div>
+      <!-- <button class="btn btn-default" clip-copy="welcomeCtrl.snippet.content | tagFill: welcomeCtrl.values">Copy to clipboard <i class="fa fa-clipboard"></i></button> -->
     </div>
   </div>
+</div>
 </div>

@@ -2,7 +2,7 @@
 
 (function () {
 
-	angular.module('smApp', ['templates', 'ui.router', 'auth', 'welcome', 'home', 'ngClipboard'])
+	angular.module('smApp', ['templates', 'ui.router', 'auth', 'welcome', 'home', 'ngClipboard', 'ngMarkdown'])
 
 	.config(function(ngClipProvider) {
 		ngClipProvider.setPath('assets/ZeroClipboard.swf');
