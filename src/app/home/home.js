@@ -1,7 +1,7 @@
 (function () {
   'use strict';
 
-  angular.module('home', ['auth.service', 'common', 'user', 'ui.bootstrap'])
+  angular.module('home', ['auth.service', 'common', 'user', 'ui.bootstrap', 'ngTagsInput'])
 
   .config(function($urlRouterProvider, $stateProvider) {
     $stateProvider
@@ -120,7 +120,7 @@
     this.saveSnippet = function () {
       snippets.$save(this.snippet)
       .catch(function(error) {
-        console.log('EditController [submit] could not save item: ' + error);
+        console.log('SnippetController [saveSnippet] could not save item: ' + error);
       })
       .finally(function() {
         $modalInstance.close();
@@ -133,6 +133,16 @@
 
     this.cancel = function() {
       $modalInstance.dismiss();
+    };
+
+    this.delete = function() {
+      snippets.$remove(this.snippet)
+      .catch(function(error) {
+        console.warn('SnippetController [delete] Could not delete snippet. Snippet was ' + this.snippet + ' and error was ' + error.code);
+      })
+      .then(function() {
+        $modalInstance.close();
+      });
     };
   });
 

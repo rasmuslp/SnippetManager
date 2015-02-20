@@ -8,28 +8,23 @@
 
   <div class="form-group">
     <label class="control-label">Title</label>
-    <input class="form-control" ng-model="snippetCtrl.snippet.title"><br />
+    <input class="form-control" ng-model="snippetCtrl.snippet.title">
   </div>
 
   <div class="form-group">
-    <label class="control-label" for="textarea">Add placeholder</label>
-    <input class="form-control" ng-model="snippetCtrl.newVariable"><br />
-    <button ng-click="snippetCtrl.addVariable()" class="btn btn-primary" ng-disabled="snippetCtrl.newVariable.length === 0">Add</button>
+    <label class="control-label" for="keywords">Keywords</label>
+    <tags-input id="keywords" ng-model="snippetCtrl.snippet.variables" display-property="tag" placeholder="Add new keywords"></tags-input>
   </div>
 
   <div class="form-group">
-    <label class="control-label">Placeholders:</label>
-    <button class="btn btn-default btn-sm" ng-repeat="variable in snippetCtrl.snippet.variables">{{variable.tag}}</button>
-  </div>
-
-  <div class="form-group">
-    <label class="control-label" for="textarea">Content</label>
-    <textarea class="form-control" ng-model="snippetCtrl.snippet.content" rows="15" id="textarea" name="textarea">default text</textarea>
+    <label class="control-label" for="content">Content</label>
+    <textarea class="form-control" ng-model="snippetCtrl.snippet.content" rows="15" id="content" name="textarea">default text</textarea>
   </div>
 
 </div>
 
 <div class="modal-footer">
+  <button type="button" class="btn btn-danger pull-left" ng-click="snippetCtrl.delete()"><i class="fa fa-trash-o"></i> Delete</button>
   <button type="button" class="btn btn-default" ng-click="snippetCtrl.cancel()">Cancel</button>
   <button ng-if="!snippetCtrl.edit" type="button" class="btn btn-primary" ng-click="snippetCtrl.addSnippet()" ng-disabled="snippetCtrl.snippet.variables.length === 0 || snippetCtrl.snippet.content.length === 0 || snippetCtrl.snippet.title.length === 0">Add</button>
   <button ng-if="snippetCtrl.edit" type="button" class="btn btn-primary" ng-click="snippetCtrl.saveSnippet()" ng-disabled="snippetCtrl.snippet.variables.length === 0 || snippetCtrl.snippet.content.length === 0 || snippetCtrl.snippet.title.length === 0">Save</button>
