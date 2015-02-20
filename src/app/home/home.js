@@ -89,27 +89,25 @@
   .controller('SnippetController', function(snippets, snippetId, $scope, $modalInstance) {
     this.edit = angular.isDefined(snippetId);
 
-    this.snippet = {
+    this.org = {
       variables : []
     };
 
+
     if (this.edit) {
-      this.snippet = snippets.$getRecord(snippetId);
-      if (this.snippet === null) {
+      this.org = snippets.$getRecord(snippetId);
+      if (this.org === null) {
         console.warn('SnippetController [modal] Snippet not available. ID was ' + snippetId);
         $modalInstance.close();
       }
     }
 
-    this.newVariable = '';
+    this.snippet = angular.copy(this.org);
+    this.snippet.variables = angular.copy(this.org.variables);
+    this.tagsChanged = false;
 
-    this.addVariable = function () {
-      this.snippet.variables = this.snippet.variables || [];
-      this.snippet.variables.push({
-        tag: this.newVariable
-      });
-
-      this.newVariable = '';
+    this.tagMod = function() {
+      this.tagsChanged = !angular.equals(this.org.variables, this.snippet.variables);
     };
 
     this.addSnippet = function () {
@@ -118,7 +116,8 @@
     };
 
     this.saveSnippet = function () {
-      snippets.$save(this.snippet)
+      angular.extend(this.org, this.snippet);
+      snippets.$save(this.org)
       .catch(function(error) {
         console.log('SnippetController [saveSnippet] could not save item: ' + error);
       })
@@ -136,9 +135,9 @@
     };
 
     this.delete = function() {
-      snippets.$remove(this.snippet)
+      snippets.$remove(this.org)
       .catch(function(error) {
-        console.warn('SnippetController [delete] Could not delete snippet. Snippet was ' + this.snippet + ' and error was ' + error.code);
+        console.warn('SnippetController [delete] Could not delete snippet. Snippet was ' + this.org + ' and error was ' + error.code);
       })
       .then(function() {
         $modalInstance.close();
