@@ -8,7 +8,7 @@
     <div class="col-md-2">
       <button type="button" class="btn btn-success btn-block" ng-click="homeCtrl.openSnippet()"><i class="fa fa-plus-circle"></i> Snippt</button>
       <div class="snippetEnabler" ng-repeat="snippet in homeCtrl.snippets">
-        <label><input type="checkbox" ng-init="snippet.enabled = true" ng-model="snippet.enabled"><div class="checkboxText" style="float:right; margin-left: 5px;">{{snippet.title}}</div></label>
+        <label><input type="checkbox" ng-init="snippet.enabled = true" ng-model="snippet.enabled" ng-click="homeCtrl.toggleSnippet(snippet)"><div class="checkboxText" style="float:right; margin-left: 5px;">{{snippet.title}}</div></label>
         <span class="pull-right">
           <button class="btn btn-default btn-xs" ng-click="homeCtrl.openSnippet(snippet.$id)"><i class="fa fa-pencil"></i></button>
         </span>

@@ -48,10 +48,11 @@
       });
     };
 
-    this.deleteSnippet = function(snippet) {
-      snippets.$remove(snippet)
+    this.toggleSnippet = function(snippet) {
+      snippet.enabled = !!snippet.enabled;
+      snippets.$save(snippet)
       .catch(function(error) {
-        console.warn('HomeController [delete] Could not delete snippet. Snippet was ' + snippet + ' and error was ' + error.code);
+        console.log('HomeController [toggleSnippet] could not save snippet: ' + error);
       });
     };
 
@@ -90,9 +91,9 @@
     this.edit = angular.isDefined(snippetId);
 
     this.org = {
-      variables : []
+      variables : [],
+      enabled: true
     };
-
 
     if (this.edit) {
       this.org = snippets.$getRecord(snippetId);
