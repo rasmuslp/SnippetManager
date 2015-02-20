@@ -13,7 +13,7 @@
 
   <div class="form-group">
     <label class="control-label" for="keywords">Keywords</label>
-    <tags-input id="keywords" ng-model="snippetCtrl.snippet.variables" display-property="tag" placeholder="Add some keywords" on-tag-added="snippetCtrl.tagMod()" on-tag-removed="snippetCtrl.tagMod()"></tags-input>
+    <tags-input id="keywords" ng-model="snippetCtrl.snippet.variables" display-property="tag" placeholder="Add some keywords" min-length="2" on-tag-added="snippetCtrl.tagMod()" on-tag-removed="snippetCtrl.tagMod()"></tags-input>
   </div>
 
   <div class="form-group">
