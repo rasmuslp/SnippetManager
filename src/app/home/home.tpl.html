@@ -7,7 +7,7 @@
 
     <div class="col-md-2">
       <button type="button" class="btn btn-success btn-block" ng-click="homeCtrl.openSnippet()"><i class="fa fa-plus-circle"></i> Snippt</button>
-      <div style="margin-top:10px;" ng-repeat="snippet in homeCtrl.snippets">
+      <div class="snippetEnabler" ng-repeat="snippet in homeCtrl.snippets">
         <label><input type="checkbox" ng-init="snippet.enabled = true" ng-model="snippet.enabled"><div class="checkboxText" style="float:right; margin-left: 5px;">{{snippet.title}}</div></label>
         <span class="pull-right">
           <button class="btn btn-default btn-xs" ng-click="homeCtrl.openSnippet(snippet.$id)"><i class="fa fa-pencil"></i></button>
@@ -17,7 +17,7 @@
     </div>
 
     <div class="col-md-3" ng-init="homeCtrl.values = {}">
-      <div class="snippet" ng-repeat="snippet in homeCtrl.snippets" ng-show="snippet.enabled">
+      <div class="snippetEdit" ng-repeat="snippet in homeCtrl.snippets" ng-if="snippet.enabled">
         <p class="lead" style="margin-bottom: 5px;">{{snippet.title}}</p>
         <div class="form-group" ng-repeat="variable in snippet.variables">
           <input class="form-control" placeholder="{{variable.tag}}" ng-model="homeCtrl.values[variable.tag]">
@@ -25,8 +25,8 @@
       </div>
     </div>
 
-    <div class="col-md-7">
-      <div ng-repeat="snippet in homeCtrl.snippets" ng-show="snippet.enabled">
+    <div class="col-md-7 animated" ng-class="{'fadeIn': homeCtrl.copyNotice}">
+      <div class="snippetContent" ng-repeat="snippet in homeCtrl.snippets" ng-if="snippet.enabled">
         <div ng-bind-html="snippet | tagFill: homeCtrl.values | ngMarkdown | html">
         </div>
       </div>

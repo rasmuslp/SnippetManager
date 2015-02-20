@@ -29,7 +29,7 @@
     });
   })
 
-  .controller('HomeController', function(snippets, $modal, $filter) {
+  .controller('HomeController', function(snippets, $modal, $filter, $timeout) {
     this.snippets = snippets;
 
     this.openSnippet = function(id) {
@@ -63,6 +63,9 @@
       return $filter('ngMarkdown')(this.copyAsMarkdown(snippet));
     };
 
+    this.copyNotice = false;
+    var self = this;
+
     this.copyEnabledAsHTML = function() {
       var text = '';
       angular.forEach(snippets, function(snippet) {
@@ -70,6 +73,14 @@
           text += this.copyAsHTML(snippet);
         }
       }, this);
+
+      $timeout(function() {
+        self.copyNotice = true;
+      }, 0);
+
+      $timeout(function() {
+        self.copyNotice = false;
+      }, 1000);
 
       return text;
     };
