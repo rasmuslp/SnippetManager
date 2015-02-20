@@ -16,7 +16,8 @@ module.exports = {
   },
   vendor: {
     css: [
-    'vendor/fontawesome/css/font-awesome.css'
+    'vendor/fontawesome/css/font-awesome.css',
+    'vendor/ng-tags-input/ng-tags-input.bootstrap.min.css'
     ]
   }
 };
