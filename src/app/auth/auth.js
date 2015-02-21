@@ -19,27 +19,11 @@
 				}
 			}
 		})
-		.state('auth.signup', {
-			url: '/signup',
-			templateUrl: 'app/auth/auth.tpl.html',
-			controller: 'AuthController',
-			controllerAs: 'authCtrl',
-			resolve: {
-				'signup': function() {
-					return true;
-				}
-			}
-		})
 		.state('auth.login', {
 			url: '/login',
 			templateUrl: 'app/auth/auth.tpl.html',
 			controller: 'AuthController',
-			controllerAs: 'authCtrl',
-			resolve: {
-				'signup': function() {
-					return false;
-				}
-			}
+			controllerAs: 'authCtrl'
 		})
 		.state('auth.logout', {
 			onEnter: function(AuthService) {

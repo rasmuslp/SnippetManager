@@ -3,12 +3,12 @@
 
 	angular.module('auth.controller', ['auth.service'])
 
-	.controller('AuthController', function($state, AuthService, signup, auth) {
+	.controller('AuthController', function($state, AuthService, auth) {
 		if (auth !== null) {
 			$state.go('auth.redirect');
 		}
 
-		this.signup = signup;
+		this.signup = false;
 
 		this.user = {
 			email: '',
@@ -98,19 +98,6 @@
 					self.working = false;
 				});
 			}
-		};
-
-		this.login3rdParty = function(provider) {
-			this.error = {};
-			this.error.provider = provider.capitalize();
-
-			AuthService.login3rdParty(provider)
-			.then(function() {
-				console.log('AuthController [login3rdParty]: Login succeeded!');
-			})
-			.catch(function(error) {
-				errorHandler(error);
-			});
 		};
 
 	});

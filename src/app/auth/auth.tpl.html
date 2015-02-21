@@ -63,7 +63,7 @@
 							<span ng-if="!authCtrl.signup && !authCtrl.working">Login</span>
 							<span ng-if="authCtrl.working"><i class="fa fa-circle-o-notch fa-spin"></i> Working...</span>
 						</button>
-						<div ng-show="authCtrl.error.code === 'NETWORK_ERROR'" class="auth-error text-center text-danger">
+						<div ng-if="authCtrl.error.code === 'NETWORK_ERROR'" class="auth-error text-center text-danger">
 							Network error, try again
 						</div>
 						<div ng-if="authCtrl.error.code === 'GENERAL_ERROR'" class="auth-error text-center text-danger">
@@ -73,11 +73,11 @@
 				</div>
 			</div>
 			<div ng-if="authCtrl.signup" class="text-center">
-				<a ui-sref="auth.login">If you already have an account, you can login here.</a>
+				<a ng-click="authCtrl.signup = false">If you already have an account, you can login here.</a>
 			</div>
 			<div ng-if="!authCtrl.signup" class="text-center">
 				<small>You don't have an account?</small>
-				<button class="btn btn-default btn-block" type="button" ui-sref="auth.signup">Create an account here!</button>
+				<button class="btn btn-default btn-block" type="button" ng-click="authCtrl.signup = true">Create an account here!</button>
 			</div>
 		</div>
 	</div>
