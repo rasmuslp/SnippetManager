@@ -7,64 +7,77 @@
 						<div class="form-group">
 							<div class="input-group">
 								<span class="input-group-addon"><i class="fa fa-envelope-o fa-fw"></i></span>
-								<input class="form-control" name="email" type="email" placeholder="Email address" ng-model="authCtrl.user.email" ng-model-options="{ debounce : { 'default' : 500, blur : 0 } }" required email-available-validator="authCtrl.signup">
+								<input class="form-control" ng-disabled="authCtrl.working" name="email" type="email" placeholder="Email address" ng-model="authCtrl.user.email">
 							</div>
-							<div class="form-sub">
-								<div class="text-danger" ng-messages="authForm.email.$error" ng-if="authForm.$submitted || authForm.email.$touched">
-									<div ng-message="required">You did not enter an email address</div>
+							<div class="form-sub text-danger">
+								<div ng-messages="authForm.email.$error" ng-if="authForm.$submitted || authForm.email.$touched">
+									<div ng-message="required">Enter your email address</div>
 									<div ng-message="email">This does not look like an email address</div>
-									<div ng-message="emailUnique">This email address is already registered</div>
+								</div>
+								<div ng-if="authCtrl.error.code === 'EMAIL_TAKEN'">
+									This email address is already registered
+								</div>
+								<div ng-if="authCtrl.error.code === 'INVALID_EMAIL'">
+									Invalid email address
+								</div>
+								<div ng-if="authCtrl.error.code === 'INVALID_USER'">
+									This account does not exist
 								</div>
 							</div>
 						</div>
 						<div class="form-group">
 							<div class="input-group">
 								<span class="input-group-addon"><i class="fa fa-key fa-fw"></i></span>
-								<input class="form-control" name="password" type="password" placeholder="Password" ng-model="authCtrl.user.password" required minlength="8">
+								<input class="form-control" ng-disabled="authCtrl.working" name="password" type="password" placeholder="Password" ng-model="authCtrl.user.password" required minlength="8">
 							</div>
-						</div>
-						<div class="form-sub">
-							<div class="text-danger" ng-messages="authForm.password.$error" ng-if="authForm.$submitted || authForm.password.$touched">
-								<div ng-message="required">You did not enter a password</div>
-								<div ng-message="minlength">The password must be at least 8 characters</div>
+							<div class="form-sub text-danger">
+								<div ng-messages="authForm.password.$error" ng-if="authForm.$submitted || authForm.password.$touched">
+									<div ng-message="required">Enter a password</div>
+									<div ng-message="minlength">The password must be at least 8 characters</div>
+								</div>
+								<div ng-if="authCtrl.error.code === 'INVALID_PASSWORD'">
+									Invalid password
+								</div>
 							</div>
 						</div>
 						<div class="form-group" ng-if="authCtrl.signup">
 							<div class="input-group">
 								<span class="input-group-addon"><i class="fa fa-key fa-fw"></i></span>
-								<input class="form-control" name="passwordConfirm" type="password" placeholder="Confirm password" ng-model="authCtrl.user.passwordConfirm" required minlength="8" compare-to-validator="authCtrl.user.password">
+								<input class="form-control" ng-disabled="authCtrl.working" name="passwordConfirm" type="password" placeholder="Confirm password" ng-model="authCtrl.user.passwordConfirm" required minlength="8" compare-to-validator="authCtrl.user.password">
 							</div>
-							<div class="form-sub">
+							<div class="form-sub text-danger">
 								<div class="text-danger" ng-messages="authForm.passwordConfirm.$error" ng-if="authForm.$submitted || authForm.passwordConfirm.$touched">
-									<div ng-message="required">You did not enter a password</div>
-									<div ng-message="compareTo">The passwords did not match</div>
+									<div ng-message="required">Repeat the password</div>
+									<div ng-message="compareTo">The passwords does not match</div>
 								</div>
 							</div>
 						</div>
-						<div class="form-group">
-							<button type="button" data-toggle="button" class="btn btn-default btn-block" ng-model="authCtrl.user.remember">Remember me</button>
+						<div class="checkbox text-center">
+							<label>
+								<input ng-disabled="authCtrl.working" type="checkbox" id="authRemember" ng-model="authCtrl.user.remember">
+								Remember me
+							</label>
 						</div>
-						<button class="btn btn-lg btn-primary btn-block" ng-if="authCtrl.signup" type="submit">Sign up</button>
-						<div ng-if="!authCtrl.signup">
-							<button class="btn btn-lg btn-primary btn-block" type="submit">Login</button>
-							<div id="social-auth" class="text-center" ng-show="false">
-								or login with one of the following
-								<ul>
-									<li><a ng-click="authCtrl.login3rdParty('facebook')"><i class="fa fa-3x fa-facebook-official"></i></a></li>
-									<li><a ng-click="authCtrl.login3rdParty('google')"><i class="fa fa-3x fa-google"></i></a></li>
-									<li><a ng-click="authCtrl.login3rdParty('twitter')"><i class="fa fa-3x fa-twitter"></i></a></li>
-								</ul>
-							</div>
+						<button class="btn btn-lg btn-primary btn-block" ng-disabled="authCtrl.working" type="submit">
+							<span ng-if="authCtrl.signup && !authCtrl.working">Create account</span>
+							<span ng-if="!authCtrl.signup && !authCtrl.working">Login</span>
+							<span ng-if="authCtrl.working"><i class="fa fa-circle-o-notch fa-spin"></i> Working...</span>
+						</button>
+						<div ng-show="authCtrl.error.code === 'NETWORK_ERROR'" class="auth-error text-center text-danger">
+							Network error, try again
+						</div>
+						<div ng-if="authCtrl.error.code === 'GENERAL_ERROR'" class="auth-error text-center text-danger">
+							An unexpected error occurred
 						</div>
 					</form>
 				</div>
 			</div>
 			<div ng-if="authCtrl.signup" class="text-center">
-				<a ui-sref="auth.login">Login to your account</a>
+				<a ui-sref="auth.login">If you already have an account, you can login here.</a>
 			</div>
 			<div ng-if="!authCtrl.signup" class="text-center">
-				<small>Don't have an account ?</small>
-				<button class="btn btn-default btn-block" type="button" ui-sref="auth.signup">Go create one!</button>
+				<small>You don't have an account?</small>
+				<button class="btn btn-default btn-block" type="button" ui-sref="auth.signup">Create an account here!</button>
 			</div>
 		</div>
 	</div>

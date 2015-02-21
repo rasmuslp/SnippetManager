@@ -31,10 +31,6 @@
 				return fbAuth.$waitForAuth();
 			},
 
-			getAuthSync: function() {
-				return fbAuth.$getAuth();
-			},
-
 			create: function(email, password) {
 				var credentials = {
 					email: email,

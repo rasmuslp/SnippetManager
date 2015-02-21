@@ -1,9 +1,5 @@
 {
   "rules": {
-    "emails": {
-      ".read": true,
-      ".write": true
-    },
     "users": {
       "$uid": {
         ".read": "$uid === auth.uid",

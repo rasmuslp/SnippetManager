@@ -1,7 +1,7 @@
 (function () {
 	'use strict';
 
-	angular.module('auth', ['ngMessages', 'auth.service', 'email.service'])
+	angular.module('auth', ['ngMessages', 'auth.service', 'auth.controller', 'auth.directives'])
 
 	.constant('welcomeNoAuthState', 'welcome')
 	.constant('welcomeAuthState', 'home.home')
@@ -46,7 +46,7 @@
 				AuthService.logout();
 			},
 			controller: function($state) {
-				$state.go(welcomeNoAuthState);
+				$state.go(welcomeNoAuthState, {reload: true});
 			}
 		})
 		.state('auth.redirect', {
@@ -114,157 +114,6 @@
 				$state.go('auth.login');
 			}
 		});
-	})
-
-	.directive('emailAvailableValidator', function(EmailService) {
-		return {
-			restrict: 'A',
-			require : 'ngModel',
-			link : function($scope, element, attrs, ngModel) {
-				if ($scope.$eval(attrs.emailAvailableValidator)) {
-					ngModel.$asyncValidators.emailUnique = function(email) {
-						return EmailService.emailAvailable(email);
-					};
-				}
-			}
-		};
-	})
-
-	.directive('compareToValidator', function() {
-		return {
-			restrict: 'A',
-			require : 'ngModel',
-			link : function($scope, element, attrs, ngModel) {
-				$scope.$watch(attrs.compareToValidator, function() {
-					ngModel.$validate();
-				});
-				ngModel.$validators.compareTo = function(value) {
-					var other = $scope.$eval(attrs.compareToValidator);
-					return !value || !other || value === other;
-				};
-			}
-		};
-	})
-
-	.directive('showAuthed', function (AuthService, $timeout) {
-		var isAuthed;
-		AuthService.watch(function(authData) {
-			isAuthed = !!authData;
-		});
-
-		return {
-			restrict: 'A',
-			link: function($scope, element) {
-				// Hide until processed
-				element.addClass('ng-cloak');
-
-				function update() {
-					// Set view state. Wrapped in timer for reliability
-					$timeout(function() {
-						element.toggleClass('ng-cloak', !isAuthed);
-					});
-				}
-
-				update();
-				AuthService.watch(update, $scope);
-			}
-		};
-	})
-
-	.directive('hideAuthed', function (AuthService, $timeout) {
-		var isAuthed;
-		AuthService.watch(function(authData) {
-			isAuthed = !!authData;
-		});
-
-		return {
-			restrict: 'A',
-			link: function($scope, element) {
-				// Hide until processed
-				element.addClass('ng-cloak');
-
-				function update() {
-					// Set view state. Wrapped in timer for reliability
-					$timeout(function() {
-						element.toggleClass('ng-cloak', isAuthed);
-					});
-				}
-
-				update();
-				AuthService.watch(update, $scope);
-			}
-		};
-	})
-
-	.controller('AuthController', function($state, AuthService, EmailService, signup, auth) {
-		if (auth !== null) {
-			$state.go('auth.redirect');
-		}
-
-		this.signup = signup;
-
-		this.user = {
-			email: '',
-			password: '',
-			passwordConfirm: '',
-			remember: false
-		};
-
-		var createAccount = function(email, password) {
-			return AuthService.create(email, password);
-		};
-
-		var registerEmail = function(email) {
-			return EmailService.create(email);
-		};
-
-		var login = function(email, password, remember) {
-			return AuthService.login(email, password, remember);
-		};
-
-		this.submit = function(valid) {
-			if (!valid) {
-				return;
-			}
-
-			if (this.signup) {
-				console.log('AuthController [submit]: Sign up!');
-
-				var user = this.user;
-
-				createAccount(user.email, user.password)
-				.then(function() {
-					return login(user.email, user.password, user.remember);
-				})
-				.then(function() {
-					return registerEmail(user.email);
-				})
-				.catch(function(error) {
-					//TODO: Throw to GUI
-					console.error('AuthController [submit]: Error: %o', error);
-				});
-			} else {
-				console.log('AuthController [submit]: Login!');
-
-				login(this.user.email, this.user.password, this.user.remember)
-				.catch(function(error) {
-					//TODO: Throw to GUI
-					console.error('AuthController [submit]: Error: %o', error);
-				});
-			}
-		};
-
-		this.login3rdParty = function(provider) {
-			AuthService.login3rdParty(provider)
-			.then(function() {
-				console.log('AuthController [login3rdParty]: Login succeeded!');
-			})
-			.catch(function(error) {
-				//TODO: Throw to GUI
-				console.error('AuthController [login3rdParty]: Error: %o', error);
-			});
-		};
-
 	});
 
 }());
