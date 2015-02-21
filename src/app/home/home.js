@@ -1,7 +1,7 @@
 (function () {
   'use strict';
 
-  angular.module('home', ['auth.service', 'common', 'user', 'ui.bootstrap', 'ngTagsInput'])
+  angular.module('home', ['auth.service', 'common', 'user', 'ngTagsInput'])
 
   .config(function($urlRouterProvider, $stateProvider) {
     $stateProvider

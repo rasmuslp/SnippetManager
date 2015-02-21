@@ -2,7 +2,7 @@
   'use strict';
 
   angular.module('menu.controller', ['common', 'auth'])
-  .controller('MenuController', function (AuthService) {
+  .controller('MenuController', function ($modal, AuthService) {
     this.name = '';
 
     var self = this;
@@ -19,6 +19,12 @@
         self.name = '';
       }
     });
+
+    this.openAuth = function() {
+      $modal.open({
+        templateUrl: 'app/auth/auth.modal.tpl.html'
+      });
+    };
 
   });
 
