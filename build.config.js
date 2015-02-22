@@ -12,7 +12,8 @@ module.exports = {
     tpl: ['src/**/*.tpl.html'],
     less: ['src/style.less', 'src/**/*.less'],
     index: 'src/index.html',
-    assets: 'src/assets/**/*'
+    assets: 'src/assets/**/*',
+    cname: 'src/CNAME'
   },
   vendor: {
     css: [
