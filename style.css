@@ -1,0 +1,102 @@
+@import "../vendor/animate.css/animate.css";
+.logo {
+  max-width: 90%;
+  margin: 20px;
+}
+.navbar-brand .logo {
+  display: inline;
+  margin: 2px;
+  width: 44px;
+}
+.snippetEnabler {
+  margin-top: 10px;
+}
+.snippetEnabler.ng-enter {
+  -webkit-animation: fadeInDown 500ms;
+          animation: fadeInDown 500ms;
+}
+.snippetEnabler.ng-leave {
+  -webkit-animation: fadeOutUp 300ms;
+          animation: fadeOutUp 300ms;
+}
+.snippetEdit {
+  margin-bottom: 15px;
+  border-bottom: 1px #eeeeee solid;
+}
+.snippetEdit:last-child {
+  border: none;
+}
+.snippetEdit.ng-enter {
+  -webkit-animation: fadeInRight 500ms;
+          animation: fadeInRight 500ms;
+}
+.snippetEdit.ng-leave {
+  -webkit-animation: fadeOutRight 300ms;
+          animation: fadeOutRight 300ms;
+}
+.snippetContent.ng-enter {
+  -webkit-animation: fadeInRight 500ms;
+          animation: fadeInRight 500ms;
+}
+.snippetContent.ng-leave {
+  -webkit-animation: fadeOutRight 300ms;
+          animation: fadeOutRight 300ms;
+}
+.navbar {
+  background: #000;
+  background: rgba(0, 0, 0, 0.8);
+  border: 0;
+}
+#auth-content {
+  padding: 20px 0;
+}
+#auth-content .form-group .form-sub {
+  text-align: center;
+  margin-top: 10px;
+}
+#auth-content #social-auth {
+  margin-top: 20px;
+  text-align: center;
+}
+#auth-content #social-auth ul {
+  margin: 10px 0 0 0;
+  padding: 0;
+  list-style: none;
+}
+#auth-content #social-auth ul li {
+  display: inline;
+  margin: 10px;
+}
+#welcome {
+  position: relative;
+  min-height: calc(100vh - 50px);
+  background-size: cover;
+  box-shadow: 0px 1px 250px 0px #555555 inset;
+}
+#welcome .by-line {
+  position: absolute;
+  margin: 20px;
+  bottom: 0;
+  left: 0;
+  right: 0;
+}
+#site-content {
+  padding-top: 50px;
+}
+#home-content {
+  padding: 20px 0;
+}
+li.active .fa-inactive {
+  display: none;
+}
+.fa-active {
+  display: none;
+}
+li.active .fa-active {
+  display: inline-block;
+}
+.no-margin {
+  margin: 0;
+}
+
+/*# sourceMappingURL=maps/style.css.map */
