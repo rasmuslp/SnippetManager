@@ -10,16 +10,3 @@ npm-debug.log
 # Gulp build
 /build/
 /vendor/
-
-# FTP Config:
-#
-# module.exports = {
-#  settings: {
-#    host: 'host',
-#    user: 'user',
-#    pass: 'pass',
-#    remotePath: 'remote-path'
-#  }
-#};
-#
-ftp.config.js

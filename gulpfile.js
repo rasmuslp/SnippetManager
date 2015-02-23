@@ -25,8 +25,7 @@ var ignore = require('gulp-ignore');
 var print = require('gulp-print');
 var ngAnnotate = require('gulp-ng-annotate');
 var plumber = require('gulp-plumber');
-var ftp = require('gulp-ftp');
-var gutil = require('gulp-util');
+var ghPages = require('gulp-gh-pages');
 
 var filterByExtension = function(extension){
   return filter(function(file){
@@ -196,7 +195,12 @@ gulp.task('copy:index', function() {
   .pipe(gulp.dest(config.build.base));
 });
 
-gulp.task('copy', ['copy:index'], function() {
+gulp.task('copy:cname', function() {
+  return gulp.src([config.src.cname])
+  .pipe(gulp.dest(config.build.base));
+});
+
+gulp.task('copy', ['copy:index', 'copy:cname'], function() {
   return gulp.src([config.build.base + 'index.html'])
   .pipe(inlineSource())
   .pipe(gulp.dest(config.build.base));
@@ -219,11 +223,8 @@ gulp.task('default', function() {
 });
 
 gulp.task('deploy', function () {
-  var ftpConfig = require('./ftp.config.js');
-
   return gulp.src(config.build.base + '/**/*')
-  .pipe(ftp(ftpConfig.settings))
-  .pipe(gutil.noop());
+  .pipe(ghPages());
 });
 
 gulp.task('travis', ['build'], function() {});
