@@ -2,7 +2,7 @@
   'use strict';
 
   angular.module('menu.controller', ['common', 'auth'])
-  .controller('MenuController', function ($modal, AuthService) {
+  .controller('MenuController', function ($state, $modal, AuthService, loginState) {
     this.name = '';
 
     var self = this;
@@ -21,9 +21,22 @@
     });
 
     this.openAuth = function() {
-      $modal.open({
-        templateUrl: 'app/auth/auth.modal.tpl.html'
-      });
+      if ($state.current.name !== loginState) {
+        $modal.open({
+          size: 'sm',
+          templateUrl: 'app/auth/auth.modal.tpl.html',
+          controller: 'AuthController',
+          controllerAs: 'authCtrl',
+          resolve: {
+            'auth': function(AuthService) {
+              return AuthService.getAuth();
+            },
+            'signup': function() {
+              return false;
+            }
+          }
+        });
+      }
     };
 
   });

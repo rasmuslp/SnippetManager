@@ -5,12 +5,12 @@
 </div>
 
 <div class="modal-body">
-  <div ng-include="'app/auth/auth.form.tpl.html'">
-    <div ng-include="'app/auth/auth.form.footer.tpl.html'">
-    </div>
-  </div>
+  <div ng-include="'app/auth/auth.form.tpl.html'"></div>
 </div>
 
 <div class="modal-footer">
+  <button ng-if="authCtrl.signup" class="btn btn-default pull-left" type="button" ng-click="authCtrl.signup = false">Login here</button>
+  <button ng-if="!authCtrl.signup" class="btn btn-default pull-left" type="button" ng-click="authCtrl.signup = true">Create an account here!</button>
+
   <button type="button" class="btn btn-default" ng-click="authCtrl.cancel()">Cancel</button>
 </div>

@@ -3,7 +3,25 @@
 
 	angular.module('auth.controller', ['auth.service'])
 
-	.controller('AuthController', function($state, AuthService, signup, auth) {
+	.constant('errorsToView', [
+		// Email
+		'EMAIL_TAKEN',
+		'INVALID_EMAIL',
+		'INVALID_USER',
+
+		// Password
+		'INVALID_PASSWORD',
+
+		// Common
+		'NETWORK_ERROR',
+
+		// Provider
+		'PROVIDER_ERROR',
+		'USER_CANCELLED',
+		'USER_DENIED'
+	])
+
+	.controller('AuthController', function($state, errorsToView, AuthService, signup, auth, $modalInstance) {
 		if (auth !== null) {
 			$state.go('auth.redirect');
 		}
@@ -22,35 +40,9 @@
 
 		var self = this;
 
-		var createAccount = function(email, password) {
-			return AuthService.create(email, password);
-		};
-
-		var login = function(email, password, remember) {
-			return AuthService.login(email, password, remember);
-		};
-
 		var errorHandler = function(error) {
 			if (error) {
-				//TODO: Some of thee might contain details that should be logged ?
-				var errorsToView = [
-					// Email
-					'EMAIL_TAKEN',
-					'INVALID_EMAIL',
-					'INVALID_USER',
-
-					// Password
-					'INVALID_PASSWORD',
-
-					// Common
-					'NETWORK_ERROR',
-
-					// Provider
-					'PROVIDER_ERROR',
-					'USER_CANCELLED',
-					'USER_DENIED'
-				];
-
+				//TODO: Some of the errors from errorsToView might contain details that should be logged
 				if (errorsToView.indexOf(error.code) === -1) {
 					//TODO: Log
 					console.error('AuthController [submit]: Error');
@@ -77,9 +69,14 @@
 
 				var user = this.user;
 
-				createAccount(user.email, user.password)
+				AuthService.create(this.user.email, this.user.password)
 				.then(function() {
-					return login(user.email, user.password, user.remember);
+					return AuthService.login(user.email, user.password, user.remember);
+				})
+				.then(function() {
+					if ($modalInstance) {
+						$modalInstance.close();
+					}
 				})
 				.catch(function(error) {
 					errorHandler(error);
@@ -90,7 +87,12 @@
 			} else {
 				console.log('AuthController [submit]: Login!');
 
-				login(this.user.email, this.user.password, this.user.remember)
+				AuthService.login(this.user.email, this.user.password, this.user.remember)
+				.then(function() {
+					if ($modalInstance) {
+						$modalInstance.close();
+					}
+				})
 				.catch(function(error) {
 					errorHandler(error);
 				})
@@ -105,9 +107,22 @@
 			this.error.provider = provider.capitalize();
 
 			AuthService.login3rdParty(provider)
+			.then(function() {
+				if ($modalInstance) {
+					$modalInstance.close();
+				}
+			})
 			.catch(function(error) {
 				errorHandler(error);
 			});
+		};
+
+		this.close = function() {
+			$modalInstance.close();
+		};
+
+		this.cancel = function() {
+			$modalInstance.dismiss();
 		};
 
 	});
