@@ -69,6 +69,25 @@
 						<div ng-if="authCtrl.error.code === 'GENERAL_ERROR'" class="auth-error text-center text-danger">
 							An unexpected error occurred
 						</div>
+						<div id="social-auth" class="text-center" ng-if="!authCtrl.signup">
+							or login with one of these
+							<ul>
+								<li><a ng-click="authCtrl.login3rdParty('facebook')"><i class="fa fa-3x fa-facebook-official"></i></a></li>
+								<li><a ng-click="authCtrl.login3rdParty('google')"><i class="fa fa-3x fa-google"></i></a></li>
+								<li><a ng-click="authCtrl.login3rdParty('twitter')"><i class="fa fa-3x fa-twitter"></i></a></li>
+							</ul>
+						</div>
+						<div class="form-sub text-danger">
+							<div ng-if="authCtrl.error.code === 'PROVIDER_ERROR'">
+								An error occurred at {{authCtrl.error.provider}}
+							</div>
+							<div ng-if="authCtrl.error.code === 'USER_CANCELLED'">
+								The authentication at {{authCtrl.error.provider}} was cancelled
+							</div>
+							<div ng-if="authCtrl.error.code === 'USER_DENIED'">
+								The authentication at {{authCtrl.error.provider}} was denied
+							</div>
+						</div>
 					</form>
 				</div>
 			</div>

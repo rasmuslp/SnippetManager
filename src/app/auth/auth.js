@@ -23,7 +23,12 @@
 			url: '/login',
 			templateUrl: 'app/auth/auth.tpl.html',
 			controller: 'AuthController',
-			controllerAs: 'authCtrl'
+			controllerAs: 'authCtrl',
+			resolve: {
+				'signup': function() {
+					return false;
+				}
+			}
 		})
 		.state('auth.logout', {
 			onEnter: function(AuthService) {
