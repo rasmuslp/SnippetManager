@@ -51,12 +51,12 @@
 
 	angular.module('auth.controller', ['auth.service'])
 
-	.controller('AuthController', ['$state', 'AuthService', 'auth', function($state, AuthService, auth) {
+	.controller('AuthController', ['$state', 'AuthService', 'signup', 'auth', function($state, AuthService, signup, auth) {
 		if (auth !== null) {
 			$state.go('auth.redirect');
 		}
 
-		this.signup = false;
+		this.signup = signup;
 
 		this.user = {
 			email: '',
@@ -146,6 +146,16 @@
 					self.working = false;
 				});
 			}
+		};
+
+		this.login3rdParty = function(provider) {
+			this.error = {};
+			this.error.provider = provider.capitalize();
+
+			AuthService.login3rdParty(provider)
+			.catch(function(error) {
+				errorHandler(error);
+			});
 		};
 
 	}]);
@@ -369,7 +379,12 @@
 			url: '/login',
 			templateUrl: 'app/auth/auth.tpl.html',
 			controller: 'AuthController',
-			controllerAs: 'authCtrl'
+			controllerAs: 'authCtrl',
+			resolve: {
+				'signup': function() {
+					return false;
+				}
+			}
 		})
 		.state('auth.logout', {
 			onEnter: ['AuthService', function(AuthService) {
@@ -596,52 +611,6 @@
   }]);
 
 }());
-(function() {
-  'use strict';
-
-  angular.module('menu.controller', ['common', 'auth'])
-  .controller('MenuController', ['AuthService', function (AuthService) {
-    this.name = '';
-
-    var self = this;
-    AuthService.watch(function(authData) {
-      if (authData) {
-        if (authData.provider === 'password') {
-          self.name = authData.password.email;
-        } else if (authData.provider === 'facebook' || authData.provider === 'twitter' || authData.provider === 'google') {
-          self.name = authData[authData.provider].displayName;
-        } else {
-          self.name = '';
-        }
-      } else {
-        self.name = '';
-      }
-    });
-
-  }]);
-
-}());
-(function () {
-  'use strict';
-
-  angular.module('menu.directive', ['menu.controller'])
-  .directive('siteMenu', function() {
-    return {
-      restrict: 'E',
-      scope: true,
-      templateUrl: 'app/menu/menu.tpl.html',
-      controller: 'MenuController',
-      controllerAs: 'menuCtrl'
-    };
-  });
-
-}());
-(function () {
-  'use strict';
-
-  angular.module('menu', ['menu.directive', 'menu.controller']);
-
-}());
 (function () {
 	/* jshint -W121 */
 
@@ -817,6 +786,52 @@
 			return cached;
 		};
 	}]);
+
+}());
+(function() {
+  'use strict';
+
+  angular.module('menu.controller', ['common', 'auth'])
+  .controller('MenuController', ['AuthService', function (AuthService) {
+    this.name = '';
+
+    var self = this;
+    AuthService.watch(function(authData) {
+      if (authData) {
+        if (authData.provider === 'password') {
+          self.name = authData.password.email;
+        } else if (authData.provider === 'facebook' || authData.provider === 'twitter' || authData.provider === 'google') {
+          self.name = authData[authData.provider].displayName;
+        } else {
+          self.name = '';
+        }
+      } else {
+        self.name = '';
+      }
+    });
+
+  }]);
+
+}());
+(function () {
+  'use strict';
+
+  angular.module('menu.directive', ['menu.controller'])
+  .directive('siteMenu', function() {
+    return {
+      restrict: 'E',
+      scope: true,
+      templateUrl: 'app/menu/menu.tpl.html',
+      controller: 'MenuController',
+      controllerAs: 'menuCtrl'
+    };
+  });
+
+}());
+(function () {
+  'use strict';
+
+  angular.module('menu', ['menu.directive', 'menu.controller']);
 
 }());
 (function () {

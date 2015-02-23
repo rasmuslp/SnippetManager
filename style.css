@@ -54,8 +54,16 @@
   text-align: center;
   margin-top: 10px;
 }
+#auth-content .auth-error {
+  margin-top: 10px;
+  border-top: 1px solid #e7e7e7;
+  padding-top: 10px;
+  margin-bottom: -5px;
+}
 #auth-content #social-auth {
-  margin-top: 20px;
+  margin-top: 15px;
+  border-top: 1px solid #e7e7e7;
+  padding-top: 10px;
   text-align: center;
 }
 #auth-content #social-auth ul {
