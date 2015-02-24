@@ -1,16 +1,27 @@
 <div class="container">
-  <div class="text-center">
-    <button class="btn btn-default" clip-copy="homeCtrl.copyEnabledAsHTML(snippet)" clip-copy-mime-type="text/html"><i class="fa fa-clipboard"></i> Copy to clipboard</button>
+  <div class="row">
+    <div class="col-md-2">
+      <button class="btn btn-default btn-block" type="button"><i class="fa fa-file"></i> Change letter</button>
+    </div>
+    <div class="col-md-3">
+      <p class="lead" style="margin-bottom: 0;">Tilbud</p>
+    </div>
+    <div class="col-md-7">
+      <div class="text-center">
+        <button class="btn btn-default" type="button" clip-copy="homeCtrl.copyEnabledAsHTML(snippet)" clip-copy-mime-type="text/html"><i class="fa fa-clipboard"></i> Copy to clipboard</button>
+      </div>
+    </div>
   </div>
   <hr/>
+
   <div class="row">
 
     <div class="col-md-2">
-      <button type="button" class="btn btn-success btn-block" ng-click="homeCtrl.openSnippet()"><i class="fa fa-plus-circle"></i> Snippt</button>
+      <button class="btn btn-success btn-block" type="button" ng-click="homeCtrl.openSnippet()"><i class="fa fa-plus-circle"></i> Snippt</button>
       <div class="snippetEnabler" ng-repeat="snippet in homeCtrl.snippets">
         <label><input type="checkbox" ng-init="snippet.enabled = true" ng-model="snippet.enabled" ng-click="homeCtrl.toggleSnippet(snippet)"><div class="checkboxText" style="float:right; margin-left: 5px;">{{snippet.title}}</div></label>
         <span class="pull-right">
-          <button class="btn btn-default btn-xs" ng-click="homeCtrl.openSnippet(snippet.$id)"><i class="fa fa-pencil"></i></button>
+          <button class="btn btn-default btn-xs" type="button" ng-click="homeCtrl.openSnippet(snippet.$id)"><i class="fa fa-pencil"></i></button>
         </span>
       </div>
     </div>
@@ -26,10 +37,10 @@
 
     <div class="col-md-7 animated" ng-class="{'fadeIn': homeCtrl.copyNotice}">
       <div class="snippetContent" ng-repeat="snippet in homeCtrl.snippets" ng-if="snippet.enabled">
-        <div ng-bind-html="snippet | tagFill: homeCtrl.values | ngMarkdown | html">
-        </div>
+        <div ng-bind-html="snippet | tagFill: homeCtrl.values | ngMarkdown | html"></div>
       </div>
     </div>
+
   </div>
 
 </div>
