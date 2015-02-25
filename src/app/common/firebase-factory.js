@@ -68,14 +68,28 @@
 			update: function(path, object) {
 				var deferred = $q.defer();
 
-				var ref = baseRef.child(path);
-				ref.update(object, function(error) {
-					if (error) {
-						console.warn('FirebaseFactory [update] of ' + path + ' failed: %o', error);
-						deferred.reject('FirebaseFactory [update] of ' + path + ' failed with error code ' + error.code);
-					} else {
-						deferred.resolve();
-					}
+				var sync = $firebase(baseRef.child(path));
+				sync.$update(object)
+				.then(function(ref) {
+					deferred.resolve(ref.key());
+				}, function(error) {
+					console.warn('FirebaseFactory [update] of %o to ' + path + ' failed: %o', object, error);
+					deferred.reject('FirebaseFactory [update] of %o to ' + path + ' failed with error code ' + error.code, object);
+				});
+
+				return deferred.promise;
+			},
+
+			push: function(path, object) {
+				var deferred = $q.defer();
+
+				var sync = $firebase(baseRef.child(path));
+				sync.$push(object)
+				.then(function(ref) {
+					deferred.resolve(ref.key());
+				}, function(error) {
+					console.warn('FirebaseFactory [push] of %o to ' + path + ' failed: %o', object, error);
+					deferred.reject('FirebaseFactory [push] of %o to ' + path + ' failed with error code ' + error.code, object);
 				});
 
 				return deferred.promise;

@@ -1,19 +1,35 @@
 (function () {
   'use strict';
 
-  angular.module('home.ctrl', ['common.filters'])
+  angular.module('home.ctrl', ['common.filters', 'letter.list.ctrl', 'snippet.ctrl', 'user'])
 
-  .controller('HomeController', function(snippets, $modal, $filter, $timeout) {
-    this.snippets = snippets;
+  .controller('HomeController', function(letters, currentLetter, $filter, $timeout, $modal) {
+    this.letter = currentLetter;
+
+    this.openLetterList = function() {
+      $modal.open({
+        templateUrl: 'app/home/letter.list.tpl.html',
+        controller: 'LetterListController',
+        controllerAs: 'letterListCtrl',
+        resolve: {
+          letters: function () {
+            return letters;
+          },
+          currentLetter: function() {
+            return currentLetter;
+          }
+        }
+      });
+    };
 
     this.openSnippet = function(id) {
       $modal.open({
-        templateUrl: 'app/home/snippet.modal.tpl.html',
+        templateUrl: 'app/home/snippet.tpl.html',
         controller: 'SnippetController',
         controllerAs: 'snippetCtrl',
         resolve: {
           snippets: function () {
-            return snippets;
+            return currentLetter.snippets;
           },
           snippetId: function() {
             return id;
@@ -23,10 +39,12 @@
     };
 
     this.toggleSnippet = function(snippet) {
-      snippet.enabled = !!snippet.enabled;
-      snippets.$save(snippet)
+      console.log('snippet');
+      console.log(snippet);
+      currentLetter.snippet.enabled = !!snippet.enabled;
+      letters.$save(currentLetter)
       .catch(function(error) {
-        console.log('HomeController [toggleSnippet] could not save snippet: ' + error);
+        console.log('HomeController [toggleSnippet] could not save letter: ' + error);
       });
     };
 
@@ -43,7 +61,7 @@
 
     this.copyEnabledAsHTML = function() {
       var text = '';
-      angular.forEach(snippets, function(snippet) {
+      angular.forEach(currentLetter.snippets, function(snippet) {
         if (snippet.enabled) {
           text += this.copyAsHTML(snippet);
         }

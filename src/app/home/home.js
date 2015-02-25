@@ -1,7 +1,7 @@
 (function () {
   'use strict';
 
-  angular.module('home', ['auth.service', 'user', 'home.ctrl', 'snippet.ctrl'])
+  angular.module('home', ['auth.service', 'user', 'home.ctrl'])
 
   .config(function($urlRouterProvider, $stateProvider) {
     $stateProvider
@@ -16,8 +16,8 @@
         requireAuth: function(requireAuth) {
           return requireAuth();
         },
-        snippets: function(UserService) {
-          return UserService.getSnippets();
+        letters: function(UserService) {
+          return UserService.getLetters();
         }
       }
     })
@@ -25,7 +25,12 @@
       url: '',
       templateUrl: 'app/home/home.tpl.html',
       controller: 'HomeController',
-      controllerAs: 'homeCtrl'
+      controllerAs: 'homeCtrl',
+      resolve: {
+        currentLetter: function(UserService) {
+          return UserService.getCurrentLetter();
+        }
+      }
     });
   });
 
