@@ -210,7 +210,6 @@
       getLetters: function() {
         return load()
         .then(function() {
-          //return FirebaseFactory.getAsArray(base + uid + '/letters');
           return FirebaseFactory.getAsArray(base + uid + '/letters', {arrayFactory: LetterFactory});
         });
       },
@@ -224,6 +223,13 @@
           var letter = data.$getRecord(id);
           console.log('Letter: %o', letter);
           return letter;
+        });
+      },
+
+      deleteLetter: function(id) {
+        return load()
+        .then(function() {
+          return FirebaseFactory.delete(base + uid + '/letters/' + id);
         });
       }
     };

@@ -8,16 +8,30 @@
     this.currentLetter = currentLetter;
 
     this.openLetter = function(id) {
-      $modal.open({
+      var editLetterModal = $modal.open({
         templateUrl: 'app/home/letter.edit.tpl.html',
         controller: 'LetterEditController',
         controllerAs: 'letterEditCtrl',
         resolve: {
-          letters: function () {
-            return letters;
-          },
           editLetter: function() {
             return UserService.getLetter(id);
+          },
+          letters: function() {
+            return letters;
+          }
+        }
+      });
+
+      editLetterModal.result
+      .then(function(letterId) {
+        if (angular.isUndefined(id)) {
+          // New letter
+          $modalInstance.close(letterId);
+        } else {
+          // Deleted letter
+          if (currentLetter.$id === letterId) {
+            console.log('Deleting current letter');
+            //TODO: Update currentLetter to an existing letter. Maybe first when this modal closes ? (What happens when the currentLetter is deleted?)
           }
         }
       });

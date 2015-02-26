@@ -9,7 +9,7 @@
     <label class="sr-only" for="letterTitle">Title</label>
     <div class="input-group">
       <div class="input-group-addon">Title</div>
-      <input class="form-control" id="letterTitle" type="text" ng-model="letterEditCtrl.letter.title" ng-init="letterEditCtrl.letter.title = ''" placeholder="Give the letter a title">
+      <input class="form-control" id="letterTitle" type="text" ng-model="letterEditCtrl.letter.title" placeholder="Give the letter a title">
     </div>
   </div>
 </div>
@@ -17,6 +17,6 @@
 <div class="modal-footer">
   <button ng-if="letterEditCtrl.edit" type="button" class="btn btn-danger pull-left" ng-click="letterEditCtrl.delete()"><i class="fa fa-trash-o"></i> Delete</button>
   <button type="button" class="btn btn-default" ng-click="letterEditCtrl.cancel()">Cancel</button>
-  <button ng-if="!letterEditCtrl.edit" type="button" class="btn btn-primary" ng-click="letterEditCtrl.add()" ng-disabled="letterEditCtrl.letter.title.length === 0">Add</button>
-  <button ng-if="letterEditCtrl.edit" type="button" class="btn btn-primary" ng-click="letterEditCtrl.save()" ng-disabled="letterEditCtrl.letter.title.length === 0 || (letterEditCtrl.letter.title === letterEditCtrl.org.title)" >Save</button>
+  <button ng-if="!letterEditCtrl.edit" type="button" class="btn btn-primary" ng-click="letterEditCtrl.addLetter()" ng-disabled="letterEditCtrl.letter.title.length === 0">Add</button>
+  <button ng-if="letterEditCtrl.edit" type="button" class="btn btn-primary" ng-click="letterEditCtrl.saveLetter()" ng-disabled="letterEditCtrl.letter.title.length === 0 || (letterEditCtrl.letter.title === letterEditCtrl.org.title)" >Save</button>
 </div>

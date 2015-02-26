@@ -4,6 +4,7 @@
   angular.module('snippet.ctrl', ['ngTagsInput'])
 
   .controller('SnippetController', function(currentLetter, snippetId, $scope, $modalInstance) {
+    var self = this;
     this.edit = angular.isDefined(snippetId);
 
     this.org = {
@@ -33,7 +34,7 @@
         $modalInstance.close();
       })
       .catch(function(error) {
-        console.log('SnippetController [addSnippet] could not add snippet. Snippet was ' + this.snippet + ' and error was ' + error.code);
+        console.log('SnippetController [addSnippet] failed. Snippet was %o and error was ' + error.code, self.snippet);
       });
     };
 
@@ -43,7 +44,7 @@
         $modalInstance.close();
       })
       .catch(function(error) {
-        console.log('SnippetController [saveSnippet] could not save snippet. Snippet was ' + this.snippet + ' and error was ' + error.code);
+        console.log('SnippetController [saveSnippet] failed. Snippet was %o and error was ' + error.code, self.snippet);
       });
     };
 
@@ -61,7 +62,7 @@
         $modalInstance.close();
       })
       .catch(function(error) {
-        console.warn('SnippetController [delete] Could not delete snippet. Snippet was ' + this.snippet + ' and error was ' + error.code);
+        console.warn('SnippetController [delete] failed. Snippet was %o and error was ' + error.code, self.snippet);
       });
     };
   });

@@ -22,7 +22,8 @@
         }
       });
 
-      letterListModal.result.then(function(selectedLetterId) {
+      letterListModal.result
+      .then(function(selectedLetterId) {
         if (selectedLetterId !== self.currentLetter.$id) {
           return UserService.setCurrentLetterId(selectedLetterId)
           .then(function() {

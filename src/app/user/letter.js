@@ -27,6 +27,12 @@
         return $firebaseUtils.updateRec(this, snap);
       },
 
+      setTitle: function(title) {
+        return FirebaseFactory.update('/users/' + AuthService.uid() + '/letters/' + this.$id, {
+          title: title
+        });
+      },
+
       addSnippet: function(snippet) {
         return FirebaseFactory.push('/users/' + AuthService.uid() + '/letters/' + this.$id + '/snippets/', snippet);
       },
