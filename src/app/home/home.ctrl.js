@@ -28,8 +28,8 @@
         controller: 'SnippetController',
         controllerAs: 'snippetCtrl',
         resolve: {
-          snippets: function () {
-            return currentLetter.snippets;
+          currentLetter: function() {
+            return currentLetter;
           },
           snippetId: function() {
             return id;
@@ -38,13 +38,10 @@
       });
     };
 
-    this.toggleSnippet = function(snippet) {
-      console.log('snippet');
-      console.log(snippet);
-      currentLetter.snippet.enabled = !!snippet.enabled;
-      letters.$save(currentLetter)
+    this.enableSnippet = function(snippetId, state) {
+      currentLetter.enableSnippet(snippetId, state)
       .catch(function(error) {
-        console.log('HomeController [toggleSnippet] could not save letter: ' + error);
+        console.log('HomeController [toggleSnippet] could not set snippet state: ' + error);
       });
     };
 

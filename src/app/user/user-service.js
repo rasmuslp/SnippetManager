@@ -1,8 +1,8 @@
 (function() {
   'use strict';
 
-  angular.module('user.service', ['common', 'auth'])
-  .factory('UserService', function($q, FB, FirebaseFactory, AuthService) {
+  angular.module('user.service', ['common', 'auth', 'letter'])
+  .factory('UserService', function($q, FB, FirebaseFactory, AuthService, LetterFactory) {
     var version = 3;
 
     var base = '/users/';
@@ -125,7 +125,10 @@
     var getNextLetterId = function() {
       // This will return a Letter ID that refers to an object that is guaranteed to exist.
 
-      return service.getLetters().$loaded()
+      return service.getLetters()
+      .then(function(asArray) {
+        return asArray.$loaded();
+      })
       .then(function(data) {
         if (data.length === 0) {
           // Create new example letter
@@ -150,7 +153,10 @@
         }
       })
       .then(function (nextLetterId) {
-        service.setCurrentLetterId(nextLetterId);
+        return service.setCurrentLetterId(nextLetterId)
+        .then(function() {
+          return nextLetterId;
+        });
       });
     };
 
@@ -165,18 +171,24 @@
       getCurrentLetter: function() {
         return load()
         .then(function() {
-          return FirebaseFactory.getOnce(base + uid + '/currentLetter');
+          return FirebaseFactory.getOnce(base + uid + '/currentLetterId');
         })
         .then(function(letterId) {
           if (letterId === null) {
             // Not previously set
-            return service.getLetter(getNextLetterId());
+            return getNextLetterId()
+            .then(function(nextLetterId) {
+              return service.getLetter(nextLetterId);
+            });
           } else {
             return service.getLetter(letterId)
             .then(function(letter) {
               if (letter === null) {
                 // Letter dissapered
-                return service.getLetter(getNextLetterId());
+                return getNextLetterId()
+                .then(function(nextLetterId) {
+                  return service.getLetter(nextLetterId);
+                });
               } else {
                 // Letter found
                 return letter;
@@ -190,7 +202,7 @@
         return load()
         .then(function() {
           return FirebaseFactory.update(base + uid, {
-            currentLetter: id
+            currentLetterId: id
           });
         });
       },
@@ -198,12 +210,12 @@
       getLetters: function() {
         return load()
         .then(function() {
-          return FirebaseFactory.getAsArray(base + uid + '/letters');
+          //return FirebaseFactory.getAsArray(base + uid + '/letters');
+          return FirebaseFactory.getAsArray(base + uid + '/letters', {arrayFactory: LetterFactory});
         });
       },
 
       getLetter: function(id) {
-        console.log('getLetter ' + id);
         return service.getLetters()
         .then(function(asArray) {
           return asArray.$loaded();

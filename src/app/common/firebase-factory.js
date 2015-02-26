@@ -37,16 +37,16 @@
 				return deferred.promise;
 			},
 
-			getAsArray: function(path) {
+			getAsArray: function(path, config) {
 				var ref = baseRef.child(path);
 
-				return $firebase(ref).$asArray();
+				return $firebase(ref, config).$asArray();
 			},
 
-			getAsObject: function(path) {
+			getAsObject: function(path, config) {
 				var ref = baseRef.child(path);
 
-				return $firebase(ref).$asObject();
+				return $firebase(ref, config).$asObject();
 			},
 
 			set: function(path, object) {

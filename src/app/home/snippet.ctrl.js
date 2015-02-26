@@ -3,7 +3,7 @@
 
   angular.module('snippet.ctrl', ['ngTagsInput'])
 
-  .controller('SnippetController', function(snippets, snippetId, $scope, $modalInstance) {
+  .controller('SnippetController', function(currentLetter, snippetId, $scope, $modalInstance) {
     this.edit = angular.isDefined(snippetId);
 
     this.org = {
@@ -12,7 +12,7 @@
     };
 
     if (this.edit) {
-      this.org = snippets.$getRecord(snippetId);
+      this.org = currentLetter.snippets[snippetId];
       if (this.org === null) {
         console.warn('SnippetController [modal] Snippet not available. ID was ' + snippetId);
         $modalInstance.close();
@@ -28,18 +28,22 @@
     };
 
     this.addSnippet = function () {
-      snippets.$add(this.snippet);
-      $modalInstance.close();
+      currentLetter.addSnippet(this.snippet)
+      .then(function() {
+        $modalInstance.close();
+      })
+      .catch(function(error) {
+        console.log('SnippetController [addSnippet] could not add snippet. Snippet was ' + this.snippet + ' and error was ' + error.code);
+      });
     };
 
     this.saveSnippet = function () {
-      angular.extend(this.org, this.snippet);
-      snippets.$save(this.org)
-      .catch(function(error) {
-        console.log('SnippetController [saveSnippet] could not save item: ' + error);
-      })
-      .finally(function() {
+      currentLetter.saveSnippet(snippetId, this.snippet)
+      .then(function() {
         $modalInstance.close();
+      })
+      .catch(function(error) {
+        console.log('SnippetController [saveSnippet] could not save snippet. Snippet was ' + this.snippet + ' and error was ' + error.code);
       });
     };
 
@@ -52,12 +56,12 @@
     };
 
     this.delete = function() {
-      snippets.$remove(this.org)
-      .catch(function(error) {
-        console.warn('SnippetController [delete] Could not delete snippet. Snippet was ' + this.org + ' and error was ' + error.code);
-      })
+      currentLetter.removeSnippet(snippetId)
       .then(function() {
         $modalInstance.close();
+      })
+      .catch(function(error) {
+        console.warn('SnippetController [delete] Could not delete snippet. Snippet was ' + this.snippet + ' and error was ' + error.code);
       });
     };
   });
