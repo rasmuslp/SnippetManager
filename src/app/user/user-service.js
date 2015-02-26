@@ -135,7 +135,7 @@
           return FirebaseFactory.push(base + uid + '/letters', {
             title: 'Example',
             snippets: [{
-              title: 'Email dinner header',
+              title: 'Email header',
               enabled: true,
               content: '###Dear NAME,\nI look forward to meeting you at the restaurant RESTURANTNAME at TIME.',
               variables: [{

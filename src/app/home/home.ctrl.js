@@ -3,11 +3,12 @@
 
   angular.module('home.ctrl', ['common.filters', 'letter.list.ctrl', 'snippet.ctrl', 'user'])
 
-  .controller('HomeController', function(letters, currentLetter, $filter, $timeout, $modal) {
+  .controller('HomeController', function(letters, currentLetter, $filter, $timeout, UserService, $modal) {
     this.letter = currentLetter;
+    var self = this;
 
     this.openLetterList = function() {
-      $modal.open({
+      var letterListModal = $modal.open({
         templateUrl: 'app/home/letter.list.tpl.html',
         controller: 'LetterListController',
         controllerAs: 'letterListCtrl',
@@ -16,8 +17,23 @@
             return letters;
           },
           currentLetter: function() {
-            return currentLetter;
+            return self.letter;
           }
+        }
+      });
+
+      letterListModal.result.then(function(selectedLetterId) {
+        if (selectedLetterId !== self.letter.$id) {
+          return UserService.setCurrentLetterId(selectedLetterId)
+          .then(function() {
+            return UserService.getCurrentLetter();
+          })
+          .then(function(letter) {
+            self.letter = letter;
+          })
+          .catch(function(error) {
+            console.log('HomeController [openLetterList] could not set current letter: ' + error.code);
+          });
         }
       });
     };
@@ -29,7 +45,7 @@
         controllerAs: 'snippetCtrl',
         resolve: {
           currentLetter: function() {
-            return currentLetter;
+            return self.letter;
           },
           snippetId: function() {
             return id;
@@ -39,7 +55,7 @@
     };
 
     this.enableSnippet = function(snippetId, state) {
-      currentLetter.enableSnippet(snippetId, state)
+      self.letter.enableSnippet(snippetId, state)
       .catch(function(error) {
         console.log('HomeController [toggleSnippet] could not set snippet state: ' + error);
       });
@@ -54,11 +70,10 @@
     };
 
     this.copyNotice = false;
-    var self = this;
 
     this.copyEnabledAsHTML = function() {
       var text = '';
-      angular.forEach(currentLetter.snippets, function(snippet) {
+      angular.forEach(self.letter.snippets, function(snippet) {
         if (snippet.enabled) {
           text += this.copyAsHTML(snippet);
         }

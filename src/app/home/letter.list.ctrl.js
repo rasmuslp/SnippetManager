@@ -24,7 +24,7 @@
     };
 
     this.selectLetter = function(id) {
-      console.log('Letter selected: ' + id);
+      $modalInstance.close(id);
     };
 
     this.close = function() {
