@@ -4,7 +4,7 @@
   angular.module('home.ctrl', ['common.filters', 'letter.list.ctrl', 'snippet.ctrl', 'user'])
 
   .controller('HomeController', function(letters, currentLetter, $filter, $timeout, UserService, $modal) {
-    this.letter = currentLetter;
+    this.currentLetter = currentLetter;
     var self = this;
 
     this.openLetterList = function() {
@@ -17,19 +17,19 @@
             return letters;
           },
           currentLetter: function() {
-            return self.letter;
+            return self.currentLetter;
           }
         }
       });
 
       letterListModal.result.then(function(selectedLetterId) {
-        if (selectedLetterId !== self.letter.$id) {
+        if (selectedLetterId !== self.currentLetter.$id) {
           return UserService.setCurrentLetterId(selectedLetterId)
           .then(function() {
             return UserService.getCurrentLetter();
           })
           .then(function(letter) {
-            self.letter = letter;
+            self.currentLetter = letter;
           })
           .catch(function(error) {
             console.log('HomeController [openLetterList] could not set current letter: ' + error.code);
@@ -45,7 +45,7 @@
         controllerAs: 'snippetCtrl',
         resolve: {
           currentLetter: function() {
-            return self.letter;
+            return self.currentLetter;
           },
           snippetId: function() {
             return id;
@@ -55,7 +55,7 @@
     };
 
     this.enableSnippet = function(snippetId, state) {
-      self.letter.enableSnippet(snippetId, state)
+      self.currentLetter.enableSnippet(snippetId, state)
       .catch(function(error) {
         console.log('HomeController [toggleSnippet] could not set snippet state: ' + error);
       });
@@ -73,7 +73,7 @@
 
     this.copyEnabledAsHTML = function() {
       var text = '';
-      angular.forEach(self.letter.snippets, function(snippet) {
+      angular.forEach(self.currentLetter.snippets, function(snippet) {
         if (snippet.enabled) {
           text += this.copyAsHTML(snippet);
         }
