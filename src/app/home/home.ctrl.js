@@ -9,6 +9,7 @@
 
     this.openLetterList = function() {
       var letterListModal = $modal.open({
+        size: 'sm',
         templateUrl: 'app/home/letter.list.tpl.html',
         controller: 'LetterListController',
         controllerAs: 'letterListCtrl',

@@ -133,19 +133,63 @@
         if (data.length === 0) {
           // Create new example letter
           return FirebaseFactory.push(base + uid + '/letters', {
-            title: 'Example',
-            snippets: [{
-              title: 'Email header',
+            title: 'Meeting example'
+          })
+          .then(function(letterId) {
+            return FirebaseFactory.push(base + uid + '/letters/' + letterId + '/snippets/', {
+              title: 'Header',
               enabled: true,
-              content: '###Dear NAME,\nI look forward to meeting you at the restaurant RESTURANTNAME at TIME.',
+              content: '# Dear NAME\nPlease help me get my nephews back from VILLIAN.',
               variables: [{
                 tag: 'NAME'
               },{
-                tag: 'RESTURANTNAME'
-              },{
-                tag: 'TIME'
+                tag: 'VILLIAN'
               }]
-            }]
+            })
+            .then(function() {
+              return FirebaseFactory.push(base + uid + '/letters/' + letterId + '/snippets/', {
+                title: 'Remember',
+                enabled: true,
+                content: 'Remember to bring the secret WEAPON to defeat VILLIAN.',
+                variables: [{
+                  tag: 'WEAPON'
+                },{
+                  tag: 'VILLIAN'
+                }]
+              });
+            })
+            .then(function() {
+              return FirebaseFactory.push(base + uid + '/letters/' + letterId + '/snippets/', {
+                title: 'Meet',
+                enabled: false,
+                content: 'Let us meet up at LOCATION at TIME.',
+                variables: [{
+                  tag: 'LOCATION'
+                },{
+                  tag: 'TIME'
+                }]
+              });
+            })
+            .then(function() {
+              return FirebaseFactory.push(base + uid + '/letters/' + letterId + '/snippets/', {
+                title: 'Click me !',
+                enabled: false,
+                content: '### Snipp\'it\nA letter consists of snippits. A snippit has a template text and some keywords that replaces said keywords in the text. Try it out by entering a word HERE!',
+                variables: [{
+                  tag: 'HERE'
+                }]
+              });
+            })
+            .then(function() {
+              return FirebaseFactory.push(base + uid + '/letters/' + letterId + '/snippets/', {
+                title: 'Footer',
+                enabled: true,
+                content: '### Regards\nDonald Duck\n1113 Quack Street\nDuckburg'
+              });
+            })
+            .then(function() {
+              return letterId;
+            });
           });
         } else {
           // Use first letter
