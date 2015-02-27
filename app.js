@@ -27,7 +27,7 @@
 
 (function () {
 
-	angular.module('smApp', ['ngAnimate', 'templates', 'ui.router', 'analytics', 'auth', 'welcome', 'home', 'ngClipboard', 'ngMarkdown'])
+	angular.module('smApp', ['ngAnimate', 'templates', 'ui.router', 'ui.bootstrap', 'analytics', 'auth', 'welcome', 'home', 'ngClipboard', 'ngMarkdown'])
 
 	.config(['ngClipProvider', function(ngClipProvider) {
 		ngClipProvider.setPath('assets/ZeroClipboard.swf');
@@ -44,6 +44,197 @@
 			$(this).collapse('hide');
 		}
 	});
+
+}());
+(function () {
+	/* jshint -W121 */
+
+	'use strict';
+
+	angular.module('common', ['common.config', 'common.firebase.factory', 'common.filters']);
+	String.prototype.capitalize = function() {
+    return this.charAt(0).toUpperCase() + this.slice(1);
+	};
+
+}());
+(function () {
+	'use strict';
+
+	angular.module('common.config', [])
+	.constant('FB', 'https://snippetmanager.firebaseio.com/');
+
+}());
+(function () {
+  'use strict';
+
+
+  angular.module('common.filters', [])
+
+  .filter('tagFill', function () {
+    return function(snippet, values) {
+      var text = snippet.content;
+      var newText = text;
+      for (var variableIndex in snippet.variables) {
+        if (snippet.variables.hasOwnProperty(variableIndex)) {
+
+          var variable = snippet.variables[variableIndex];
+          if (values.hasOwnProperty(variable.tag) && values[variable.tag].length > 0) {
+            newText = newText.replace(new RegExp(variable.tag, 'g'), values[variable.tag]);
+          } else if (variable.placeholder && variable.placeholder.length > 0) {
+            newText = newText.replace(new RegExp(variable.tag, 'g'), '(' + variable.placeholder + ')');
+          }
+        }
+      }
+
+      return newText;
+    };
+  })
+
+  .filter('html', ['$sce', function($sce) {
+    return function(val) {
+      return $sce.trustAsHtml(val);
+    };
+  }]);
+
+}());
+(function() {
+	'use strict';
+
+	angular.module('common.firebase.factory', ['firebase'])
+
+	.factory('FirebaseFactory', ['FB', '$q', '$firebase', function(FB, $q, $firebase) {
+		var baseRef = new Firebase(FB);
+
+		var ret = {
+			delete: function(path) {
+				var deferred = $q.defer();
+
+				var ref = baseRef.child(path);
+				ref.set({}, function(error) {
+					if (error) {
+						console.warn('FirebaseFactory [delete] of ' + path + ' failed: %o', error);
+						deferred.reject('FirebaseFactory [delete] of ' + path + ' failed with error code ' + error.code);
+					} else {
+						deferred.resolve();
+					}
+				});
+
+				return deferred.promise;
+			},
+
+			getOnce: function(path) {
+				var deferred = $q.defer();
+
+				var ref = baseRef.child(path);
+				ref.once('value', function(data) {
+					deferred.resolve(data.val());
+				}, function(error) {
+					console.warn('FirebaseFactory [getOnce] of ' + path + ' failed: %o', error);
+					deferred.reject('FirebaseFactory [getOnce] of ' + path + ' failed with error code ' + error.code);
+				});
+
+				return deferred.promise;
+			},
+
+			getAsArray: function(path, config) {
+				var ref = baseRef.child(path);
+
+				return $firebase(ref, config).$asArray();
+			},
+
+			getAsObject: function(path, config) {
+				var ref = baseRef.child(path);
+
+				return $firebase(ref, config).$asObject();
+			},
+
+			set: function(path, object) {
+				var deferred = $q.defer();
+
+				var ref = baseRef.child(path);
+				ref.set(object, function(error) {
+					if (error) {
+						console.warn('FirebaseFactory [set] of ' + path + ' failed: %o', error);
+						deferred.reject('FirebaseFactory [set] of ' + path + ' failed with error code ' + error.code);
+					} else {
+						deferred.resolve();
+					}
+				});
+
+				return deferred.promise;
+			},
+
+			update: function(path, object) {
+				var deferred = $q.defer();
+
+				var sync = $firebase(baseRef.child(path));
+				sync.$update(object)
+				.then(function(ref) {
+					deferred.resolve(ref.key());
+				}, function(error) {
+					console.warn('FirebaseFactory [update] of %o to ' + path + ' failed: %o', object, error);
+					deferred.reject('FirebaseFactory [update] of %o to ' + path + ' failed with error code ' + error.code, object);
+				});
+
+				return deferred.promise;
+			},
+
+			push: function(path, object) {
+				var deferred = $q.defer();
+
+				var sync = $firebase(baseRef.child(path));
+				sync.$push(object)
+				.then(function(ref) {
+					deferred.resolve(ref.key());
+				}, function(error) {
+					console.warn('FirebaseFactory [push] of %o to ' + path + ' failed: %o', object, error);
+					deferred.reject('FirebaseFactory [push] of %o to ' + path + ' failed with error code ' + error.code, object);
+				});
+
+				return deferred.promise;
+			}
+		};
+
+		return ret;
+	}])
+
+	.factory('ObjectCache', ['$firebase', function ($firebase) {
+		return function (ref) {
+			var cached = {};
+
+			// Fills cache with
+			cached.$init = function() {
+				ref.on('child_added', function(snapshot) {
+					cached.$load(snapshot.key());
+				});
+			};
+
+			// Load object into cache
+			cached.$load = function (id) {
+				if( !cached.hasOwnProperty(id) ) {
+					cached[id] = $firebase(ref.child(id)).$asObject();
+				}
+
+				return cached[id];
+			};
+
+			// Frees memory and stops listening on objects.
+			// Use this when you switch views in your SPA and no longer need this list.
+			cached.$dispose = function () {
+				angular.forEach(cached, function (object) {
+					object.$destroy();
+				});
+			};
+
+			// Removes an object, both form cache and on Firebase
+			cached.$remove = function(id) {
+				delete cached[id];
+				ref.child(id).remove();
+			};
+
+			return cached;
+		};
+	}]);
 
 }());
 (function () {
@@ -465,45 +656,66 @@
 (function () {
   'use strict';
 
-  angular.module('home', ['auth.service', 'common', 'user', 'ui.bootstrap', 'ngTagsInput'])
+  angular.module('home.ctrl', ['common.filters', 'letter.list.ctrl', 'snippet.ctrl', 'user'])
 
-  .config(['$urlRouterProvider', '$stateProvider', function($urlRouterProvider, $stateProvider) {
-    $stateProvider
-    .state('home', {
-      abstract: true,
-      url: '/home',
-      template: '<div id="home-content" ui-view></div>',
-      contoller: function($state) {
-        $state.go('home.home');
-      },
-      resolve: {
-        requireAuth: ['requireAuth', function(requireAuth) {
-          return requireAuth();
-        }],
-        snippets: ['UserService', function(UserService) {
-          return UserService.getSnippets();
-        }]
-      }
-    })
-    .state('home.home', {
-      url: '',
-      templateUrl: 'app/home/home.tpl.html',
-      controller: 'HomeController',
-      controllerAs: 'homeCtrl'
-    });
-  }])
+  .controller('HomeController', ['letters', 'currentLetter', '$scope', '$filter', '$timeout', 'UserService', '$modal', function(letters, currentLetter, $scope, $filter, $timeout, UserService, $modal) {
+    this.currentLetter = currentLetter;
+    var self = this;
 
-  .controller('HomeController', ['snippets', '$modal', '$filter', '$timeout', function(snippets, $modal, $filter, $timeout) {
-    this.snippets = snippets;
+    this.openLetterList = function() {
+      var letterListModal = $modal.open({
+        size: 'sm',
+        templateUrl: 'app/home/letter.list.tpl.html',
+        controller: 'LetterListController',
+        controllerAs: 'letterListCtrl',
+        resolve: {
+          letters: function () {
+            return letters;
+          },
+          currentLetter: function() {
+            return self.currentLetter;
+          }
+        }
+      });
+
+      letterListModal.result
+      .then(function(selectedLetterId) {
+        if (selectedLetterId === true) {
+          // Deleted letter
+          return UserService.setCurrentLetterId(null)
+          .then(function() {
+            return UserService.getCurrentLetter();
+          })
+          .then(function(letter) {
+            self.currentLetter = letter;
+          })
+          .catch(function(error) {
+            console.log('HomeController [openLetterList] could not set current letter: ' + error.code);
+          });
+        } else if (selectedLetterId !== self.currentLetter.$id) {
+          // Changed letter
+          return UserService.setCurrentLetterId(selectedLetterId)
+          .then(function() {
+            return UserService.getCurrentLetter();
+          })
+          .then(function(letter) {
+            self.currentLetter = letter;
+          })
+          .catch(function(error) {
+            console.log('HomeController [openLetterList] could not set current letter: ' + error.code);
+          });
+        }
+      });
+    };
 
     this.openSnippet = function(id) {
       $modal.open({
-        templateUrl: 'app/home/snippet.modal.tpl.html',
+        templateUrl: 'app/home/snippet.tpl.html',
         controller: 'SnippetController',
         controllerAs: 'snippetCtrl',
         resolve: {
-          snippets: function () {
-            return snippets;
+          currentLetter: function() {
+            return self.currentLetter;
           },
           snippetId: function() {
             return id;
@@ -512,11 +724,10 @@
       });
     };
 
-    this.toggleSnippet = function(snippet) {
-      snippet.enabled = !!snippet.enabled;
-      snippets.$save(snippet)
+    this.enableSnippet = function(snippetId, state) {
+      self.currentLetter.enableSnippet(snippetId, state)
       .catch(function(error) {
-        console.log('HomeController [toggleSnippet] could not save snippet: ' + error);
+        console.log('HomeController [toggleSnippet] could not set snippet state: ' + error);
       });
     };
 
@@ -529,11 +740,10 @@
     };
 
     this.copyNotice = false;
-    var self = this;
 
     this.copyEnabledAsHTML = function() {
       var text = '';
-      angular.forEach(snippets, function(snippet) {
+      angular.forEach(self.currentLetter.snippets, function(snippet) {
         if (snippet.enabled) {
           text += this.copyAsHTML(snippet);
         }
@@ -549,9 +759,172 @@
 
       return text;
     };
-  }])
+  }]);
 
-  .controller('SnippetController', ['snippets', 'snippetId', '$scope', '$modalInstance', function(snippets, snippetId, $scope, $modalInstance) {
+}());
+(function () {
+  'use strict';
+
+  angular.module('home', ['auth.service', 'user', 'home.ctrl'])
+
+  .config(['$urlRouterProvider', '$stateProvider', function($urlRouterProvider, $stateProvider) {
+    $stateProvider
+    .state('home', {
+      abstract: true,
+      url: '/home',
+      template: '<div id="home-content" ui-view></div>',
+      contoller: function($state) {
+        $state.go('home.home');
+      },
+      resolve: {
+        requireAuth: ['requireAuth', function(requireAuth) {
+          return requireAuth();
+        }],
+        letters: ['UserService', function(UserService) {
+          return UserService.getLetters();
+        }]
+      }
+    })
+    .state('home.home', {
+      url: '',
+      templateUrl: 'app/home/home.tpl.html',
+      controller: 'HomeController',
+      controllerAs: 'homeCtrl',
+      resolve: {
+        currentLetter: ['UserService', function(UserService) {
+          return UserService.getCurrentLetter();
+        }]
+      }
+    });
+  }]);
+
+}());
+(function () {
+  'use strict';
+
+  angular.module('letter.edit.ctrl', ['user.service'])
+
+  .controller('LetterEditController', ['editLetter', 'letters', 'UserService', '$modalInstance', function(editLetter, letters, UserService, $modalInstance) {
+    var self = this;
+    this.edit = !!editLetter;
+
+    this.org = {
+      title: ''
+    };
+
+    if (this.edit) {
+      if (editLetter === null) {
+        console.warn('LetterEditController [modal] Letter not available. Letter was %o', editLetter);
+        $modalInstance.close();
+      } else {
+        this.org = editLetter;
+      }
+    }
+
+    this.letter = angular.copy(this.org);
+
+    this.addLetter = function() {
+      letters.$add(this.letter)
+      .then(function(ref) {
+        $modalInstance.close(ref.key());
+      })
+      .catch(function(error) {
+        console.log('LetterEditController [addLetter] failed. Letter was %o and error was ' + error.code, self.letter);
+      });
+    };
+
+    this.saveLetter = function () {
+      editLetter.setTitle(this.letter.title)
+      .then(function() {
+        $modalInstance.close();
+      })
+      .catch(function(error) {
+        console.log('LetterEditController [saveLetter] failed. Letter was %o and error was ' + error.code, self.letter);
+      });
+    };
+
+    this.close = function() {
+      $modalInstance.close();
+    };
+
+    this.cancel = function() {
+      $modalInstance.dismiss();
+    };
+
+    this.delete = function() {
+      var id = editLetter.$id;
+      //letters.$remove(id)
+      UserService.deleteLetter(id)
+      .catch(function(error) {
+        console.warn('LetterEditController [delete] failed. Letter was %o and error was ' + error, self.org);
+      })
+      .then(function() {
+        $modalInstance.close(id);
+      });
+    };
+  }]);
+
+}());
+(function () {
+  'use strict';
+
+  angular.module('letter.list.ctrl', ['letter.edit.ctrl', 'user'])
+
+  .controller('LetterListController', ['letters', 'currentLetter', 'UserService', '$modal', '$modalInstance', function(letters, currentLetter, UserService, $modal, $modalInstance) {
+    this.letters = letters;
+    this.currentLetter = currentLetter;
+
+    this.openLetter = function(id) {
+      var editLetterModal = $modal.open({
+        templateUrl: 'app/home/letter.edit.tpl.html',
+        controller: 'LetterEditController',
+        controllerAs: 'letterEditCtrl',
+        resolve: {
+          editLetter: function() {
+            return UserService.getLetter(id);
+          },
+          letters: function() {
+            return letters;
+          }
+        }
+      });
+
+      editLetterModal.result
+      .then(function(letterId) {
+        if (angular.isUndefined(id)) {
+          // New letter
+          $modalInstance.close(letterId);
+        } else {
+          // Deleted letter
+          if (currentLetter.$id === letterId) {
+            // Deleting current letter
+            $modalInstance.close(true);
+          }
+        }
+      });
+    };
+
+    this.selectLetter = function(id) {
+      $modalInstance.close(id);
+    };
+
+    this.close = function() {
+      $modalInstance.close();
+    };
+
+    this.cancel = function() {
+      $modalInstance.dismiss();
+    };
+  }]);
+
+}());
+(function () {
+  'use strict';
+
+  angular.module('snippet.ctrl', ['ngTagsInput'])
+
+  .controller('SnippetController', ['currentLetter', 'snippetId', '$scope', '$modalInstance', function(currentLetter, snippetId, $scope, $modalInstance) {
+    var self = this;
     this.edit = angular.isDefined(snippetId);
 
     this.org = {
@@ -560,7 +933,7 @@
     };
 
     if (this.edit) {
-      this.org = snippets.$getRecord(snippetId);
+      this.org = currentLetter.snippets[snippetId];
       if (this.org === null) {
         console.warn('SnippetController [modal] Snippet not available. ID was ' + snippetId);
         $modalInstance.close();
@@ -576,18 +949,22 @@
     };
 
     this.addSnippet = function () {
-      snippets.$add(this.snippet);
-      $modalInstance.close();
+      currentLetter.addSnippet(this.snippet)
+      .then(function() {
+        $modalInstance.close();
+      })
+      .catch(function(error) {
+        console.log('SnippetController [addSnippet] failed. Snippet was %o and error was ' + error.code, self.snippet);
+      });
     };
 
     this.saveSnippet = function () {
-      angular.extend(this.org, this.snippet);
-      snippets.$save(this.org)
-      .catch(function(error) {
-        console.log('SnippetController [saveSnippet] could not save item: ' + error);
-      })
-      .finally(function() {
+      currentLetter.saveSnippet(snippetId, this.snippet)
+      .then(function() {
         $modalInstance.close();
+      })
+      .catch(function(error) {
+        console.log('SnippetController [saveSnippet] failed. Snippet was %o and error was ' + error.code, self.snippet);
       });
     };
 
@@ -600,192 +977,15 @@
     };
 
     this.delete = function() {
-      snippets.$remove(this.org)
-      .catch(function(error) {
-        console.warn('SnippetController [delete] Could not delete snippet. Snippet was ' + this.org + ' and error was ' + error.code);
-      })
+      currentLetter.removeSnippet(snippetId)
       .then(function() {
         $modalInstance.close();
+      })
+      .catch(function(error) {
+        console.warn('SnippetController [delete] failed. Snippet was %o and error was ' + error.code, self.snippet);
       });
     };
   }]);
-
-}());
-(function () {
-	/* jshint -W121 */
-
-	'use strict';
-
-	angular.module('common', ['common.config', 'common.firebase.factory', 'common.filters']);
-	String.prototype.capitalize = function() {
-    return this.charAt(0).toUpperCase() + this.slice(1);
-	};
-
-}());
-(function () {
-	'use strict';
-
-	angular.module('common.config', [])
-	.constant('FB', 'https://snippetmanager.firebaseio.com/');
-
-}());
-(function () {
-  'use strict';
-
-
-  angular.module('common.filters', [])
-
-  .filter('tagFill', function () {
-    return function(snippet, values) {
-      var text = snippet.content;
-      var newText = text;
-      for (var variableIndex in snippet.variables) {
-        if (snippet.variables.hasOwnProperty(variableIndex)) {
-
-          var variable = snippet.variables[variableIndex];
-          if (values.hasOwnProperty(variable.tag) && values[variable.tag].length > 0) {
-            newText = newText.replace(new RegExp(variable.tag, 'g'), values[variable.tag]);
-          } else if (variable.placeholder && variable.placeholder.length > 0) {
-            newText = newText.replace(new RegExp(variable.tag, 'g'), '(' + variable.placeholder + ')');
-          }
-        }
-      }
-
-      return newText;
-    };
-  })
-
-  .filter('html', ['$sce', function($sce) {
-    return function(val) {
-      return $sce.trustAsHtml(val);
-    };
-  }]);
-
-}());
-(function() {
-	'use strict';
-
-	angular.module('common.firebase.factory', ['firebase'])
-
-	.factory('FirebaseFactory', ['FB', '$q', '$firebase', function(FB, $q, $firebase) {
-		var baseRef = new Firebase(FB);
-
-		var ret = {
-			delete: function(path) {
-				var deferred = $q.defer();
-
-				var ref = baseRef.child(path);
-				ref.set({}, function(error) {
-					if (error) {
-						console.warn('FirebaseFactory [delete] of ' + path + ' failed: %o', error);
-						deferred.reject('FirebaseFactory [delete] of ' + path + ' failed with error code ' + error.code);
-					} else {
-						deferred.resolve();
-					}
-				});
-
-				return deferred.promise;
-			},
-
-			getOnce: function(path) {
-				var deferred = $q.defer();
-
-				var ref = baseRef.child(path);
-				ref.once('value', function(data) {
-					deferred.resolve(data.val());
-				}, function(error) {
-					console.warn('FirebaseFactory [getOnce] of ' + path + ' failed: %o', error);
-					deferred.reject('FirebaseFactory [getOnce] of ' + path + ' failed with error code ' + error.code);
-				});
-
-				return deferred.promise;
-			},
-
-			getAsArray: function(path) {
-				var ref = baseRef.child(path);
-
-				return $firebase(ref).$asArray();
-			},
-
-			getAsObject: function(path) {
-				var ref = baseRef.child(path);
-
-				return $firebase(ref).$asObject();
-			},
-
-			set: function(path, object) {
-				var deferred = $q.defer();
-
-				var ref = baseRef.child(path);
-				ref.set(object, function(error) {
-					if (error) {
-						console.warn('FirebaseFactory [set] of ' + path + ' failed: %o', error);
-						deferred.reject('FirebaseFactory [set] of ' + path + ' failed with error code ' + error.code);
-					} else {
-						deferred.resolve();
-					}
-				});
-
-				return deferred.promise;
-			},
-
-			update: function(path, object) {
-				var deferred = $q.defer();
-
-				var ref = baseRef.child(path);
-				ref.update(object, function(error) {
-					if (error) {
-						console.warn('FirebaseFactory [update] of ' + path + ' failed: %o', error);
-						deferred.reject('FirebaseFactory [update] of ' + path + ' failed with error code ' + error.code);
-					} else {
-						deferred.resolve();
-					}
-				});
-
-				return deferred.promise;
-			}
-		};
-
-		return ret;
-	}])
-
-	.factory('ObjectCache', ['$firebase', function ($firebase) {
-		return function (ref) {
-			var cached = {};
-
-			// Fills cache with
-			cached.$init = function() {
-				ref.on('child_added', function(snapshot) {
-					cached.$load(snapshot.key());
-				});
-			};
-
-			// Load object into cache
-			cached.$load = function (id) {
-				if( !cached.hasOwnProperty(id) ) {
-					cached[id] = $firebase(ref.child(id)).$asObject();
-				}
-
-				return cached[id];
-			};
-
-			// Frees memory and stops listening on objects.
-			// Use this when you switch views in your SPA and no longer need this list.
-			cached.$dispose = function () {
-				angular.forEach(cached, function (object) {
-					object.$destroy();
-				});
-			};
-
-			// Removes an object, both form cache and on Firebase
-			cached.$remove = function(id) {
-				delete cached[id];
-				ref.child(id).remove();
-			};
-
-			return cached;
-		};
-	}]);
 
 }());
 (function() {
@@ -834,6 +1034,354 @@
   angular.module('menu', ['menu.directive', 'menu.controller']);
 
 }());
+(function() {
+  'use strict';
+
+  angular.module('letter', ['auth', 'common'])
+
+  .factory('LetterFactory', ['$FirebaseArray', 'Letter', function($FirebaseArray, Letter) {
+    return $FirebaseArray.$extendFactory({
+      $$added: function(snap) {
+        return new Letter(snap);
+      },
+
+      $$updated: function(snap) {
+        var msg = this.$getRecord(snap.key());
+        return msg.update(snap);
+      }
+    });
+  }])
+
+  .factory('Letter', ['AuthService', '$firebaseUtils', 'FirebaseFactory', function(AuthService, $firebaseUtils, FirebaseFactory) {
+    function Letter(snap) {
+      this.$id = snap.key();
+      this.update(snap);
+    }
+
+    Letter.prototype = {
+      update: function(snap) {
+        return $firebaseUtils.updateRec(this, snap);
+      },
+
+      setTitle: function(title) {
+        return FirebaseFactory.update('/users/' + AuthService.uid() + '/letters/' + this.$id, {
+          title: title
+        });
+      },
+
+      addSnippet: function(snippet) {
+        return FirebaseFactory.push('/users/' + AuthService.uid() + '/letters/' + this.$id + '/snippets/', snippet);
+      },
+
+      enableSnippet: function(snippetId, state) {
+        return FirebaseFactory.update('/users/' + AuthService.uid() + '/letters/' + this.$id + '/snippets/' + snippetId, {
+          enabled: state
+        });
+      },
+
+      removeSnippet: function(snippetId) {
+        return FirebaseFactory.delete('/users/' + AuthService.uid() + '/letters/' + this.$id + '/snippets/' + snippetId);
+      },
+
+      saveSnippet: function(snippetId, snippet) {
+        return FirebaseFactory.update('/users/' + AuthService.uid() + '/letters/' + this.$id + '/snippets/' + snippetId, snippet);
+      }
+    };
+
+    return Letter;
+  }]);
+
+}());
+(function() {
+  'use strict';
+
+  angular.module('user.service', ['common', 'auth', 'letter'])
+  .factory('UserService', ['$q', 'FB', 'FirebaseFactory', 'AuthService', 'LetterFactory', function($q, FB, FirebaseFactory, AuthService, LetterFactory) {
+    var version = 3;
+
+    var base = '/users/';
+
+    var uid = null;
+
+    var upgrade1to2 = function(uid) {
+      console.log('UserService upgrading to v2');
+      var snippetsPath = '/users/' + uid + '/snippets';
+
+      return FirebaseFactory.getOnce(snippetsPath)
+      .then(function(data) {
+        return FirebaseFactory.delete(snippetsPath)
+        .then(function() {
+          if (data !== null) {
+            var snippets2 = FirebaseFactory.getAsArray(snippetsPath);
+            for (var i = 0; i < data.length; i++) {
+              snippets2.$add(data[i]);
+            }
+          }
+        });
+      })
+      .then(function() {
+        return FirebaseFactory.update(base + uid, {
+          version: version
+        });
+      })
+      .then(function() {
+        console.log('Upgrade to v2 completed');
+      })
+      .catch(function(error) {
+        console.error('Upgrade to v2 errored: %o', error);
+        return $q.reject(new Error('Upgrade to v3 errored: ' + error));
+      });
+    };
+
+    var upgrade2to3 = function(uid) {
+      console.log('UserService upgrading to v3');
+      var snippetsPath = '/users/' + uid + '/snippets';
+      var lettersPath = '/users/' + uid + '/letters';
+
+      return FirebaseFactory.getOnce(snippetsPath)
+      .then(function(data) {
+        if (data !== null) {
+          return FirebaseFactory.push(lettersPath, {
+            title: 'Example',
+            snippets: data
+          });
+        }
+      })
+      .then(function() {
+        return FirebaseFactory.delete(snippetsPath);
+      })
+      .then(function() {
+        return FirebaseFactory.update(base + uid, {
+          version: version
+        });
+      })
+      .then(function() {
+        console.log('Upgrade to v3 completed');
+      })
+      .catch(function(error) {
+        console.error('Upgrade to v3 errored: %o', error);
+        return $q.reject(new Error('Upgrade to v3 errored: ' + error));
+      });
+    };
+
+    var load = function() {
+      var deferred = $q.defer();
+
+      AuthService.getAuth()
+      .then(function(data) {
+        if (uid === data.uid) {
+          deferred.resolve();
+        } else {
+          uid = data.uid;
+
+          return FirebaseFactory.getOnce(base + uid + '/version')
+          .then(function(userVersion) {
+            console.log('UserService got version: ' + userVersion);
+
+            if (userVersion === null) {
+              // No User data for this uid. Let's create it.
+              return FirebaseFactory.set(base + uid, {
+                version: version
+              })
+              .then(function() {
+                deferred.resolve();
+              });
+            } else if (version !== userVersion) {
+              if (angular.isNumber(userVersion)) {
+                console.log('UserService will perform an upgrade from v' + userVersion + ' to v' + version);
+                if (userVersion === 1) {
+                  return upgrade1to2(uid)
+                  .then(function() {
+                    return upgrade2to3(uid);
+                  });
+                } else if (userVersion === 2) {
+                  return upgrade2to3(uid);
+                }
+              } else {
+                console.error('UserService: Version is not a number: ' + userVersion);
+              }
+            }
+            //TODO: watch for version to change ?
+          });
+        }
+      })
+      .then(function() {
+        // User ready
+        deferred.resolve();
+      })
+      .catch(function(error) {
+        deferred.reject('UserService [load] error ' + error.code);
+      });
+
+      return deferred.promise;
+    };
+
+    var getNextLetterId = function() {
+      // This will return a Letter ID that refers to an object that is guaranteed to exist.
+
+      return service.getLetters()
+      .then(function(asArray) {
+        return asArray.$loaded();
+      })
+      .then(function(data) {
+        if (data.length === 0) {
+          // Create new example letter
+          return FirebaseFactory.push(base + uid + '/letters', {
+            title: 'Meeting example'
+          })
+          .then(function(letterId) {
+            return FirebaseFactory.push(base + uid + '/letters/' + letterId + '/snippets/', {
+              title: 'Header',
+              enabled: true,
+              content: '# Dear NAME\nPlease help me get my nephews back from VILLIAN.',
+              variables: [{
+                tag: 'NAME'
+              },{
+                tag: 'VILLIAN'
+              }]
+            })
+            .then(function() {
+              return FirebaseFactory.push(base + uid + '/letters/' + letterId + '/snippets/', {
+                title: 'Remember',
+                enabled: true,
+                content: 'Remember to bring the secret WEAPON to defeat VILLIAN.',
+                variables: [{
+                  tag: 'WEAPON'
+                },{
+                  tag: 'VILLIAN'
+                }]
+              });
+            })
+            .then(function() {
+              return FirebaseFactory.push(base + uid + '/letters/' + letterId + '/snippets/', {
+                title: 'Meet',
+                enabled: false,
+                content: 'Let us meet up at LOCATION at TIME.',
+                variables: [{
+                  tag: 'LOCATION'
+                },{
+                  tag: 'TIME'
+                }]
+              });
+            })
+            .then(function() {
+              return FirebaseFactory.push(base + uid + '/letters/' + letterId + '/snippets/', {
+                title: 'Click me !',
+                enabled: false,
+                content: '### Snipp\'it\nA letter consists of snippits. A snippit has a template text and some keywords that replaces said keywords in the text. Try it out by entering a word HERE!',
+                variables: [{
+                  tag: 'HERE'
+                }]
+              });
+            })
+            .then(function() {
+              return FirebaseFactory.push(base + uid + '/letters/' + letterId + '/snippets/', {
+                title: 'Footer',
+                enabled: true,
+                content: '### Regards\n\nDonald Duck\n1113 Quack Street\nDuckburg'
+              });
+            })
+            .then(function() {
+              return letterId;
+            });
+          });
+        } else {
+          // Use first letter
+          return data[0].$id;
+        }
+      })
+      .then(function (nextLetterId) {
+        return service.setCurrentLetterId(nextLetterId)
+        .then(function() {
+          return nextLetterId;
+        });
+      });
+    };
+
+    var service = {
+      getData: function() {
+        return load()
+        .then(function() {
+          return FirebaseFactory.getAsObject(base + uid + '/data');
+        });
+      },
+
+      getCurrentLetter: function() {
+        return load()
+        .then(function() {
+          return FirebaseFactory.getOnce(base + uid + '/currentLetterId');
+        })
+        .then(function(letterId) {
+          if (letterId === null) {
+            // Not previously set
+            return getNextLetterId()
+            .then(function(nextLetterId) {
+              return service.getLetter(nextLetterId);
+            });
+          } else {
+            return service.getLetter(letterId)
+            .then(function(letter) {
+              if (letter === null) {
+                // Letter dissapered
+                return getNextLetterId()
+                .then(function(nextLetterId) {
+                  return service.getLetter(nextLetterId);
+                });
+              } else {
+                // Letter found
+                return letter;
+              }
+            });
+          }
+        });
+      },
+
+      setCurrentLetterId: function(id) {
+        return load()
+        .then(function() {
+          return FirebaseFactory.update(base + uid, {
+            currentLetterId: id
+          });
+        });
+      },
+
+      getLetters: function() {
+        return load()
+        .then(function() {
+          return FirebaseFactory.getAsArray(base + uid + '/letters', {arrayFactory: LetterFactory});
+        });
+      },
+
+      getLetter: function(id) {
+        return service.getLetters()
+        .then(function(asArray) {
+          return asArray.$loaded();
+        })
+        .then(function(data) {
+          var letter = data.$getRecord(id);
+          console.log('Letter: %o', letter);
+          return letter;
+        });
+      },
+
+      deleteLetter: function(id) {
+        return load()
+        .then(function() {
+          return FirebaseFactory.delete(base + uid + '/letters/' + id);
+        });
+      }
+    };
+
+    return service;
+  }]);
+
+}());
+(function () {
+  'use strict';
+
+  angular.module('user', ['user.service']);
+
+}());
 (function () {
   'use strict';
 
@@ -870,115 +1418,6 @@
       return $filter('ngMarkdown')(this.copyAsMarkdown(snippet));
     };
   }]);
-
-}());
-(function() {
-  'use strict';
-
-  angular.module('user.service', ['common', 'auth'])
-  .factory('UserService', ['$q', 'FB', 'FirebaseFactory', 'AuthService', function($q, FB, FirebaseFactory, AuthService) {
-    var version = 2;
-
-    var base = '/users/';
-
-    var uid = null;
-
-    var load = function() {
-      var deferred = $q.defer();
-
-      AuthService.getAuth()
-      .then(function(data) {
-        if (uid === data.uid) {
-          deferred.resolve();
-        } else {
-          uid = data.uid;
-
-          return FirebaseFactory.getOnce(base + uid + '/version')
-          .then(function(userVersion) {
-            console.log('UserService got version: ' + userVersion);
-
-            if (userVersion === null) {
-              // No User data for this uid. Let's create it.
-              return FirebaseFactory.set(base + uid, {
-                version: version
-              })
-              .then(function() {
-                deferred.resolve();
-              });
-            } else if (version !== userVersion) {
-              if (angular.isNumber(userVersion)) {
-                console.log('UserService perform upgrade from v ' + userVersion + ' to v ' + version);
-                if (userVersion === 1) {
-                  var snippetsPath = '/users/' + uid + '/snippets';
-
-                  return FirebaseFactory.getOnce(snippetsPath)
-                  .then(function(data) {
-                    return FirebaseFactory.delete(snippetsPath)
-                    .then(function() {
-                      if (data !== null) {
-                        var snippets2 = FirebaseFactory.getAsArray(snippetsPath);
-                        for (var i = 0; i < data.length; i++) {
-                          snippets2.$add(data[i]);
-                        }
-                      }
-                    });
-                  })
-                  .then(function() {
-                    return FirebaseFactory.update(base + uid, {
-                      version: version
-                    });
-                  })
-                  .then(function() {
-                    console.log('Upgrade completed');
-                  })
-                  .catch(function(error) {
-                    console.error('Upgrade errored: %o', error);
-                    return $q.reject(new Error('Upgrade errored: ' + error));
-                  });
-                }
-              } else {
-                console.error('UserService: Version is not a number: ' + userVersion);
-              }
-            }
-            //TODO: watch for version to change ?
-          });
-        }
-      })
-      .then(function() {
-        // User ready
-        deferred.resolve();
-      })
-      .catch(function(error) {
-        deferred.reject('UserService [load] error ' + error.code);
-      });
-
-      return deferred.promise;
-    };
-
-    var service = {
-      getData: function() {
-        return load()
-        .then(function() {
-          return FirebaseFactory.getAsObject(base + uid + '/data');
-        });
-      },
-
-      getSnippets: function() {
-        return load()
-        .then(function() {
-          return FirebaseFactory.getAsArray(base + uid + '/snippets');
-        });
-      }
-    };
-
-    return service;
-  }]);
-
-}());
-(function () {
-  'use strict';
-
-  angular.module('user', ['user.service']);
 
 }());
 //# sourceMappingURL=maps/app.js.map
