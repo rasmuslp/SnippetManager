@@ -30,8 +30,8 @@
         } else {
           // Deleted letter
           if (currentLetter.$id === letterId) {
-            console.log('Deleting current letter');
-            //TODO: Update currentLetter to an existing letter. Maybe first when this modal closes ? (What happens when the currentLetter is deleted?)
+            // Deleting current letter
+            $modalInstance.close(true);
           }
         }
       });

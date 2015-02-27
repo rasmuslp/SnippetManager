@@ -3,7 +3,7 @@
 
   angular.module('home.ctrl', ['common.filters', 'letter.list.ctrl', 'snippet.ctrl', 'user'])
 
-  .controller('HomeController', function(letters, currentLetter, $filter, $timeout, UserService, $modal) {
+  .controller('HomeController', function(letters, currentLetter, $scope, $filter, $timeout, UserService, $modal) {
     this.currentLetter = currentLetter;
     var self = this;
 
@@ -25,7 +25,20 @@
 
       letterListModal.result
       .then(function(selectedLetterId) {
-        if (selectedLetterId !== self.currentLetter.$id) {
+        if (selectedLetterId === true) {
+          // Deleted letter
+          return UserService.setCurrentLetterId(null)
+          .then(function() {
+            return UserService.getCurrentLetter();
+          })
+          .then(function(letter) {
+            self.currentLetter = letter;
+          })
+          .catch(function(error) {
+            console.log('HomeController [openLetterList] could not set current letter: ' + error.code);
+          });
+        } else if (selectedLetterId !== self.currentLetter.$id) {
+          // Changed letter
           return UserService.setCurrentLetterId(selectedLetterId)
           .then(function() {
             return UserService.getCurrentLetter();
