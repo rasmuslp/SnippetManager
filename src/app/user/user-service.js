@@ -184,7 +184,7 @@
               return FirebaseFactory.push(base + uid + '/letters/' + letterId + '/snippets/', {
                 title: 'Footer',
                 enabled: true,
-                content: '### Regards\nDonald Duck\n1113 Quack Street\nDuckburg'
+                content: '### Regards\n\nDonald Duck\n1113 Quack Street\nDuckburg'
               });
             })
             .then(function() {
