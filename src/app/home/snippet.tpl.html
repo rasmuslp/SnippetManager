@@ -27,5 +27,5 @@
   <button ng-if="snippetCtrl.edit" type="button" class="btn btn-danger pull-left" ng-click="snippetCtrl.delete()"><i class="fa fa-trash-o"></i> Delete</button>
   <button type="button" class="btn btn-default" ng-click="snippetCtrl.cancel()">Cancel</button>
   <button ng-if="!snippetCtrl.edit" type="button" class="btn btn-primary" ng-click="snippetCtrl.addSnippet()" ng-disabled="snippetCtrl.snippet.title.length === 0 || snippetCtrl.snippet.content.length === 0">Add</button>
-  <button ng-if="snippetCtrl.edit" type="button" class="btn btn-primary" ng-click="snippetCtrl.saveSnippet()" ng-disabled="snippetCtrl.snippet.title.length === 0 || snippetCtrl.snippet.content.length === 0 || !(snippetCtrl.snippet.content !== snippetCtrl.org.content || snippetCtrl.tagsChanged)" >Save</button>
+  <button ng-if="snippetCtrl.edit" type="button" class="btn btn-primary" ng-click="snippetCtrl.saveSnippet()" ng-disabled="snippetCtrl.snippet.title.length === 0 || snippetCtrl.snippet.content.length === 0 || (snippetCtrl.snippet.title === snippetCtrl.org.title && snippetCtrl.snippet.content === snippetCtrl.org.content && !snippetCtrl.tagsChanged)" >Save</button>
 </div>

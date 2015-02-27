@@ -1,13 +1,74 @@
 (function() {
   'use strict';
 
-  angular.module('user.service', ['common', 'auth'])
-  .factory('UserService', function($q, FB, FirebaseFactory, AuthService) {
-    var version = 2;
+  angular.module('user.service', ['common', 'auth', 'letter'])
+  .factory('UserService', function($q, FB, FirebaseFactory, AuthService, LetterFactory) {
+    var version = 3;
 
     var base = '/users/';
 
     var uid = null;
+
+    var upgrade1to2 = function(uid) {
+      console.log('UserService upgrading to v2');
+      var snippetsPath = '/users/' + uid + '/snippets';
+
+      return FirebaseFactory.getOnce(snippetsPath)
+      .then(function(data) {
+        return FirebaseFactory.delete(snippetsPath)
+        .then(function() {
+          if (data !== null) {
+            var snippets2 = FirebaseFactory.getAsArray(snippetsPath);
+            for (var i = 0; i < data.length; i++) {
+              snippets2.$add(data[i]);
+            }
+          }
+        });
+      })
+      .then(function() {
+        return FirebaseFactory.update(base + uid, {
+          version: version
+        });
+      })
+      .then(function() {
+        console.log('Upgrade to v2 completed');
+      })
+      .catch(function(error) {
+        console.error('Upgrade to v2 errored: %o', error);
+        return $q.reject(new Error('Upgrade to v3 errored: ' + error));
+      });
+    };
+
+    var upgrade2to3 = function(uid) {
+      console.log('UserService upgrading to v3');
+      var snippetsPath = '/users/' + uid + '/snippets';
+      var lettersPath = '/users/' + uid + '/letters';
+
+      return FirebaseFactory.getOnce(snippetsPath)
+      .then(function(data) {
+        if (data !== null) {
+          return FirebaseFactory.push(lettersPath, {
+            title: 'Example',
+            snippets: data
+          });
+        }
+      })
+      .then(function() {
+        return FirebaseFactory.delete(snippetsPath);
+      })
+      .then(function() {
+        return FirebaseFactory.update(base + uid, {
+          version: version
+        });
+      })
+      .then(function() {
+        console.log('Upgrade to v3 completed');
+      })
+      .catch(function(error) {
+        console.error('Upgrade to v3 errored: %o', error);
+        return $q.reject(new Error('Upgrade to v3 errored: ' + error));
+      });
+    };
 
     var load = function() {
       var deferred = $q.defer();
@@ -33,34 +94,14 @@
               });
             } else if (version !== userVersion) {
               if (angular.isNumber(userVersion)) {
-                console.log('UserService perform upgrade from v ' + userVersion + ' to v ' + version);
+                console.log('UserService will perform an upgrade from v' + userVersion + ' to v' + version);
                 if (userVersion === 1) {
-                  var snippetsPath = '/users/' + uid + '/snippets';
-
-                  return FirebaseFactory.getOnce(snippetsPath)
-                  .then(function(data) {
-                    return FirebaseFactory.delete(snippetsPath)
-                    .then(function() {
-                      if (data !== null) {
-                        var snippets2 = FirebaseFactory.getAsArray(snippetsPath);
-                        for (var i = 0; i < data.length; i++) {
-                          snippets2.$add(data[i]);
-                        }
-                      }
-                    });
-                  })
+                  return upgrade1to2(uid)
                   .then(function() {
-                    return FirebaseFactory.update(base + uid, {
-                      version: version
-                    });
-                  })
-                  .then(function() {
-                    console.log('Upgrade completed');
-                  })
-                  .catch(function(error) {
-                    console.error('Upgrade errored: %o', error);
-                    return $q.reject(new Error('Upgrade errored: ' + error));
+                    return upgrade2to3(uid);
                   });
+                } else if (userVersion === 2) {
+                  return upgrade2to3(uid);
                 }
               } else {
                 console.error('UserService: Version is not a number: ' + userVersion);
@@ -81,6 +122,88 @@
       return deferred.promise;
     };
 
+    var getNextLetterId = function() {
+      // This will return a Letter ID that refers to an object that is guaranteed to exist.
+
+      return service.getLetters()
+      .then(function(asArray) {
+        return asArray.$loaded();
+      })
+      .then(function(data) {
+        if (data.length === 0) {
+          // Create new example letter
+          return FirebaseFactory.push(base + uid + '/letters', {
+            title: 'Meeting example'
+          })
+          .then(function(letterId) {
+            return FirebaseFactory.push(base + uid + '/letters/' + letterId + '/snippets/', {
+              title: 'Header',
+              enabled: true,
+              content: '# Dear NAME\nPlease help me get my nephews back from VILLIAN.',
+              variables: [{
+                tag: 'NAME'
+              },{
+                tag: 'VILLIAN'
+              }]
+            })
+            .then(function() {
+              return FirebaseFactory.push(base + uid + '/letters/' + letterId + '/snippets/', {
+                title: 'Remember',
+                enabled: true,
+                content: 'Remember to bring the secret WEAPON to defeat VILLIAN.',
+                variables: [{
+                  tag: 'WEAPON'
+                },{
+                  tag: 'VILLIAN'
+                }]
+              });
+            })
+            .then(function() {
+              return FirebaseFactory.push(base + uid + '/letters/' + letterId + '/snippets/', {
+                title: 'Meet',
+                enabled: false,
+                content: 'Let us meet up at LOCATION at TIME.',
+                variables: [{
+                  tag: 'LOCATION'
+                },{
+                  tag: 'TIME'
+                }]
+              });
+            })
+            .then(function() {
+              return FirebaseFactory.push(base + uid + '/letters/' + letterId + '/snippets/', {
+                title: 'Click me !',
+                enabled: false,
+                content: '### Snipp\'it\nA letter consists of snippits. A snippit has a template text and some keywords that replaces said keywords in the text. Try it out by entering a word HERE!',
+                variables: [{
+                  tag: 'HERE'
+                }]
+              });
+            })
+            .then(function() {
+              return FirebaseFactory.push(base + uid + '/letters/' + letterId + '/snippets/', {
+                title: 'Footer',
+                enabled: true,
+                content: '### Regards\n\nDonald Duck\n1113 Quack Street\nDuckburg'
+              });
+            })
+            .then(function() {
+              return letterId;
+            });
+          });
+        } else {
+          // Use first letter
+          return data[0].$id;
+        }
+      })
+      .then(function (nextLetterId) {
+        return service.setCurrentLetterId(nextLetterId)
+        .then(function() {
+          return nextLetterId;
+        });
+      });
+    };
+
     var service = {
       getData: function() {
         return load()
@@ -89,10 +212,68 @@
         });
       },
 
-      getSnippets: function() {
+      getCurrentLetter: function() {
         return load()
         .then(function() {
-          return FirebaseFactory.getAsArray(base + uid + '/snippets');
+          return FirebaseFactory.getOnce(base + uid + '/currentLetterId');
+        })
+        .then(function(letterId) {
+          if (letterId === null) {
+            // Not previously set
+            return getNextLetterId()
+            .then(function(nextLetterId) {
+              return service.getLetter(nextLetterId);
+            });
+          } else {
+            return service.getLetter(letterId)
+            .then(function(letter) {
+              if (letter === null) {
+                // Letter dissapered
+                return getNextLetterId()
+                .then(function(nextLetterId) {
+                  return service.getLetter(nextLetterId);
+                });
+              } else {
+                // Letter found
+                return letter;
+              }
+            });
+          }
+        });
+      },
+
+      setCurrentLetterId: function(id) {
+        return load()
+        .then(function() {
+          return FirebaseFactory.update(base + uid, {
+            currentLetterId: id
+          });
+        });
+      },
+
+      getLetters: function() {
+        return load()
+        .then(function() {
+          return FirebaseFactory.getAsArray(base + uid + '/letters', {arrayFactory: LetterFactory});
+        });
+      },
+
+      getLetter: function(id) {
+        return service.getLetters()
+        .then(function(asArray) {
+          return asArray.$loaded();
+        })
+        .then(function(data) {
+          var letter = data.$getRecord(id);
+          console.log('Letter: %o', letter);
+          return letter;
+        });
+      },
+
+      deleteLetter: function(id) {
+        return load()
+        .then(function() {
+          return FirebaseFactory.delete(base + uid + '/letters/' + id);
         });
       }
     };

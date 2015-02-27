@@ -1,0 +1,20 @@
+<div class="modal-header">
+  <button class="close" type="button" aria-label="Close" ng-click="letterListCtrl.close()"><span aria-hidden="true">&times;</span></button>
+  <h4 class="modal-title">Select a letter</h4>
+</div>
+
+<div class="modal-body">
+  <div class="letterListItem" ng-repeat="letter in letterListCtrl.letters" ng-class="{'text-primary': letter.$id === letterListCtrl.currentLetter.$id}">
+    <span class="letterListItemTitle" ng-click="letterListCtrl.selectLetter(letter.$id)">
+      {{letter.title}}
+    </span>
+    <span class="pull-right">
+      <button class="btn btn-default btn-xs" type="button" ng-click="letterListCtrl.openLetter(letter.$id)"><i class="fa fa-pencil"></i></button>
+    </span>
+  </div>
+</div>
+
+<div class="modal-footer">
+  <button class="btn btn-success pull-left" type="button" ng-click="letterListCtrl.openLetter()"><i class="fa fa-plus-circle"></i> Letter</button>
+  <button class="btn btn-default" type="button" ng-click="letterListCtrl.cancel()">Cancel</button>
+</div>
