@@ -1,5 +1,5 @@
 {
   "firebase": "snippetmanager",
-  "public": "build",
+  "public": "redirect",
   "rules": "firebase-rules.json"
 }
