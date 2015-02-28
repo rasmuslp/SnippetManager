@@ -1034,6 +1034,44 @@
   angular.module('menu', ['menu.directive', 'menu.controller']);
 
 }());
+(function () {
+  'use strict';
+
+  angular.module('welcome', ['menu'])
+
+  .config(['$stateProvider', function($stateProvider) {
+    $stateProvider
+    .state('welcome', {
+      url: '/welcome',
+      templateUrl: 'app/welcome/welcome.tpl.html',
+      controller: 'WelcomeController',
+      controllerAs: 'welcomeCtrl'
+    });
+  }])
+
+  .controller('WelcomeController', ['$filter', function($filter) {
+
+    this.snippet = {
+      content: 'Hello <b>NAME</b>! I can see that you are working for <b>COMPANY</b> and I thought you might be interested in our service. It makes it possible to use variables in snippets of text. It even supports Markdown and copy to clipboard as HTML.<br /><br /><br/> <b>NAME</b> when did I last tell you that you were awesome?',
+      variables: [{
+        tag: 'NAME',
+        placeholder:'Your name'
+      },{
+        tag: 'COMPANY',
+        placeholder:'Where you work'
+      }]
+    };
+
+    this.copyAsMarkdown = function(snippet) {
+      return $filter('tagFill')(snippet, this.values);
+    };
+
+    this.copyAsHTML = function(snippet) {
+      return $filter('ngMarkdown')(this.copyAsMarkdown(snippet));
+    };
+  }]);
+
+}());
 (function() {
   'use strict';
 
@@ -1268,7 +1306,7 @@
               return FirebaseFactory.push(base + uid + '/letters/' + letterId + '/snippets/', {
                 title: 'Click me !',
                 enabled: false,
-                content: '### Snipp\'it\nA letter consists of snippits. A snippit has a template text and some keywords that replaces said keywords in the text. Try it out by entering a word HERE!',
+                content: '### Snipp\'it\nA letter consists of snippets. A snippet has a template text and some keywords that replaces said keywords in the text. Try it out by entering a word HERE!',
                 variables: [{
                   tag: 'HERE'
                 }]
@@ -1380,44 +1418,6 @@
   'use strict';
 
   angular.module('user', ['user.service']);
-
-}());
-(function () {
-  'use strict';
-
-  angular.module('welcome', ['menu'])
-
-  .config(['$stateProvider', function($stateProvider) {
-    $stateProvider
-    .state('welcome', {
-      url: '/welcome',
-      templateUrl: 'app/welcome/welcome.tpl.html',
-      controller: 'WelcomeController',
-      controllerAs: 'welcomeCtrl'
-    });
-  }])
-
-  .controller('WelcomeController', ['$filter', function($filter) {
-
-    this.snippet = {
-      content: 'Hello <b>NAME</b>! I can see that you are working for <b>COMPANY</b> and I thought you might be interested in our service. It makes it possible to use variables in snippets of text. It even supports Markdown and copy to clipboard as HTML.<br /><br /><br/> <b>NAME</b> when did I last tell you that you were awesome?',
-      variables: [{
-        tag: 'NAME',
-        placeholder:'Your name'
-      },{
-        tag: 'COMPANY',
-        placeholder:'Where you work'
-      }]
-    };
-
-    this.copyAsMarkdown = function(snippet) {
-      return $filter('tagFill')(snippet, this.values);
-    };
-
-    this.copyAsHTML = function(snippet) {
-      return $filter('ngMarkdown')(this.copyAsMarkdown(snippet));
-    };
-  }]);
 
 }());
 //# sourceMappingURL=maps/app.js.map

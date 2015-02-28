@@ -112,5 +112,9 @@ li.active .fa-active {
 .no-margin {
   margin: 0;
 }
+.modal-backdrop {
+  bottom: 0;
+  position: fixed;
+}
 
 /*# sourceMappingURL=maps/style.css.map */
