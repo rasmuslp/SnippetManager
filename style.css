@@ -12,12 +12,12 @@
   margin-top: 10px;
 }
 .snippetEnabler.ng-enter {
-  -webkit-animation: fadeInDown 500ms;
-          animation: fadeInDown 500ms;
+  -webkit-animation: fadeIn 500ms;
+          animation: fadeIn 500ms;
 }
 .snippetEnabler.ng-leave {
-  -webkit-animation: fadeOutUp 300ms;
-          animation: fadeOutUp 300ms;
+  -webkit-animation: fadeOut 300ms;
+          animation: fadeOut 300ms;
 }
 .snippetEdit {
   margin-bottom: 15px;
@@ -27,20 +27,20 @@
   border: none;
 }
 .snippetEdit.ng-enter {
-  -webkit-animation: fadeInRight 500ms;
-          animation: fadeInRight 500ms;
+  -webkit-animation: fadeIn 500ms;
+          animation: fadeIn 500ms;
 }
 .snippetEdit.ng-leave {
-  -webkit-animation: fadeOutRight 300ms;
-          animation: fadeOutRight 300ms;
+  -webkit-animation: fadeOut 300ms;
+          animation: fadeOut 300ms;
 }
 .snippetContent.ng-enter {
-  -webkit-animation: fadeInRight 500ms;
-          animation: fadeInRight 500ms;
+  -webkit-animation: fadeIn 500ms;
+          animation: fadeIn 500ms;
 }
 .snippetContent.ng-leave {
-  -webkit-animation: fadeOutRight 300ms;
-          animation: fadeOutRight 300ms;
+  -webkit-animation: fadeOut 300ms;
+          animation: fadeOut 300ms;
 }
 .letterListItem {
   margin-bottom: 10px;

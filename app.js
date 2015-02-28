@@ -47,197 +47,6 @@
 
 }());
 (function () {
-	/* jshint -W121 */
-
-	'use strict';
-
-	angular.module('common', ['common.config', 'common.firebase.factory', 'common.filters']);
-	String.prototype.capitalize = function() {
-    return this.charAt(0).toUpperCase() + this.slice(1);
-	};
-
-}());
-(function () {
-	'use strict';
-
-	angular.module('common.config', [])
-	.constant('FB', 'https://snippetmanager.firebaseio.com/');
-
-}());
-(function () {
-  'use strict';
-
-
-  angular.module('common.filters', [])
-
-  .filter('tagFill', function () {
-    return function(snippet, values) {
-      var text = snippet.content;
-      var newText = text;
-      for (var variableIndex in snippet.variables) {
-        if (snippet.variables.hasOwnProperty(variableIndex)) {
-
-          var variable = snippet.variables[variableIndex];
-          if (values.hasOwnProperty(variable.tag) && values[variable.tag].length > 0) {
-            newText = newText.replace(new RegExp(variable.tag, 'g'), values[variable.tag]);
-          } else if (variable.placeholder && variable.placeholder.length > 0) {
-            newText = newText.replace(new RegExp(variable.tag, 'g'), '(' + variable.placeholder + ')');
-          }
-        }
-      }
-
-      return newText;
-    };
-  })
-
-  .filter('html', ['$sce', function($sce) {
-    return function(val) {
-      return $sce.trustAsHtml(val);
-    };
-  }]);
-
-}());
-(function() {
-	'use strict';
-
-	angular.module('common.firebase.factory', ['firebase'])
-
-	.factory('FirebaseFactory', ['FB', '$q', '$firebase', function(FB, $q, $firebase) {
-		var baseRef = new Firebase(FB);
-
-		var ret = {
-			delete: function(path) {
-				var deferred = $q.defer();
-
-				var ref = baseRef.child(path);
-				ref.set({}, function(error) {
-					if (error) {
-						console.warn('FirebaseFactory [delete] of ' + path + ' failed: %o', error);
-						deferred.reject('FirebaseFactory [delete] of ' + path + ' failed with error code ' + error.code);
-					} else {
-						deferred.resolve();
-					}
-				});
-
-				return deferred.promise;
-			},
-
-			getOnce: function(path) {
-				var deferred = $q.defer();
-
-				var ref = baseRef.child(path);
-				ref.once('value', function(data) {
-					deferred.resolve(data.val());
-				}, function(error) {
-					console.warn('FirebaseFactory [getOnce] of ' + path + ' failed: %o', error);
-					deferred.reject('FirebaseFactory [getOnce] of ' + path + ' failed with error code ' + error.code);
-				});
-
-				return deferred.promise;
-			},
-
-			getAsArray: function(path, config) {
-				var ref = baseRef.child(path);
-
-				return $firebase(ref, config).$asArray();
-			},
-
-			getAsObject: function(path, config) {
-				var ref = baseRef.child(path);
-
-				return $firebase(ref, config).$asObject();
-			},
-
-			set: function(path, object) {
-				var deferred = $q.defer();
-
-				var ref = baseRef.child(path);
-				ref.set(object, function(error) {
-					if (error) {
-						console.warn('FirebaseFactory [set] of ' + path + ' failed: %o', error);
-						deferred.reject('FirebaseFactory [set] of ' + path + ' failed with error code ' + error.code);
-					} else {
-						deferred.resolve();
-					}
-				});
-
-				return deferred.promise;
-			},
-
-			update: function(path, object) {
-				var deferred = $q.defer();
-
-				var sync = $firebase(baseRef.child(path));
-				sync.$update(object)
-				.then(function(ref) {
-					deferred.resolve(ref.key());
-				}, function(error) {
-					console.warn('FirebaseFactory [update] of %o to ' + path + ' failed: %o', object, error);
-					deferred.reject('FirebaseFactory [update] of %o to ' + path + ' failed with error code ' + error.code, object);
-				});
-
-				return deferred.promise;
-			},
-
-			push: function(path, object) {
-				var deferred = $q.defer();
-
-				var sync = $firebase(baseRef.child(path));
-				sync.$push(object)
-				.then(function(ref) {
-					deferred.resolve(ref.key());
-				}, function(error) {
-					console.warn('FirebaseFactory [push] of %o to ' + path + ' failed: %o', object, error);
-					deferred.reject('FirebaseFactory [push] of %o to ' + path + ' failed with error code ' + error.code, object);
-				});
-
-				return deferred.promise;
-			}
-		};
-
-		return ret;
-	}])
-
-	.factory('ObjectCache', ['$firebase', function ($firebase) {
-		return function (ref) {
-			var cached = {};
-
-			// Fills cache with
-			cached.$init = function() {
-				ref.on('child_added', function(snapshot) {
-					cached.$load(snapshot.key());
-				});
-			};
-
-			// Load object into cache
-			cached.$load = function (id) {
-				if( !cached.hasOwnProperty(id) ) {
-					cached[id] = $firebase(ref.child(id)).$asObject();
-				}
-
-				return cached[id];
-			};
-
-			// Frees memory and stops listening on objects.
-			// Use this when you switch views in your SPA and no longer need this list.
-			cached.$dispose = function () {
-				angular.forEach(cached, function (object) {
-					object.$destroy();
-				});
-			};
-
-			// Removes an object, both form cache and on Firebase
-			cached.$remove = function(id) {
-				delete cached[id];
-				ref.child(id).remove();
-			};
-
-			return cached;
-		};
-	}]);
-
-}());
-(function () {
 	'use strict';
 
 	angular.module('auth.controller', ['auth.service'])
@@ -988,88 +797,195 @@
   }]);
 
 }());
-(function() {
+(function () {
+	/* jshint -W121 */
+
+	'use strict';
+
+	angular.module('common', ['common.config', 'common.firebase.factory', 'common.filters']);
+	String.prototype.capitalize = function() {
+    return this.charAt(0).toUpperCase() + this.slice(1);
+	};
+
+}());
+(function () {
+	'use strict';
+
+	angular.module('common.config', [])
+	.constant('FB', 'https://snippetmanager.firebaseio.com/');
+
+}());
+(function () {
   'use strict';
 
-  angular.module('menu.controller', ['common', 'auth'])
-  .controller('MenuController', ['AuthService', function (AuthService) {
-    this.name = '';
 
-    var self = this;
-    AuthService.watch(function(authData) {
-      if (authData) {
-        if (authData.provider === 'password') {
-          self.name = authData.password.email;
-        } else if (authData.provider === 'facebook' || authData.provider === 'twitter' || authData.provider === 'google') {
-          self.name = authData[authData.provider].displayName;
-        } else {
-          self.name = '';
+  angular.module('common.filters', [])
+
+  .filter('tagFill', function () {
+    return function(snippet, values) {
+      var text = snippet.content;
+      var newText = text;
+      for (var variableIndex in snippet.variables) {
+        if (snippet.variables.hasOwnProperty(variableIndex)) {
+
+          var variable = snippet.variables[variableIndex];
+          if (values.hasOwnProperty(variable.tag) && values[variable.tag].length > 0) {
+            newText = newText.replace(new RegExp(variable.tag, 'g'), values[variable.tag]);
+          } else if (variable.placeholder && variable.placeholder.length > 0) {
+            newText = newText.replace(new RegExp(variable.tag, 'g'), '(' + variable.placeholder + ')');
+          }
         }
-      } else {
-        self.name = '';
       }
-    });
 
-  }]);
-
-}());
-(function () {
-  'use strict';
-
-  angular.module('menu.directive', ['menu.controller'])
-  .directive('siteMenu', function() {
-    return {
-      restrict: 'E',
-      scope: true,
-      templateUrl: 'app/menu/menu.tpl.html',
-      controller: 'MenuController',
-      controllerAs: 'menuCtrl'
+      return newText;
     };
-  });
+  })
 
-}());
-(function () {
-  'use strict';
-
-  angular.module('menu', ['menu.directive', 'menu.controller']);
-
-}());
-(function () {
-  'use strict';
-
-  angular.module('welcome', ['menu'])
-
-  .config(['$stateProvider', function($stateProvider) {
-    $stateProvider
-    .state('welcome', {
-      url: '/welcome',
-      templateUrl: 'app/welcome/welcome.tpl.html',
-      controller: 'WelcomeController',
-      controllerAs: 'welcomeCtrl'
-    });
-  }])
-
-  .controller('WelcomeController', ['$filter', function($filter) {
-
-    this.snippet = {
-      content: 'Hello <b>NAME</b>! I can see that you are working for <b>COMPANY</b> and I thought you might be interested in our service. It makes it possible to use variables in snippets of text. It even supports Markdown and copy to clipboard as HTML.<br /><br /><br/> <b>NAME</b> when did I last tell you that you were awesome?',
-      variables: [{
-        tag: 'NAME',
-        placeholder:'Your name'
-      },{
-        tag: 'COMPANY',
-        placeholder:'Where you work'
-      }]
-    };
-
-    this.copyAsMarkdown = function(snippet) {
-      return $filter('tagFill')(snippet, this.values);
-    };
-
-    this.copyAsHTML = function(snippet) {
-      return $filter('ngMarkdown')(this.copyAsMarkdown(snippet));
+  .filter('html', ['$sce', function($sce) {
+    return function(val) {
+      return $sce.trustAsHtml(val);
     };
   }]);
+
+}());
+(function() {
+	'use strict';
+
+	angular.module('common.firebase.factory', ['firebase'])
+
+	.factory('FirebaseFactory', ['FB', '$q', '$firebase', function(FB, $q, $firebase) {
+		var baseRef = new Firebase(FB);
+
+		var ret = {
+			delete: function(path) {
+				var deferred = $q.defer();
+
+				var ref = baseRef.child(path);
+				ref.set({}, function(error) {
+					if (error) {
+						console.warn('FirebaseFactory [delete] of ' + path + ' failed: %o', error);
+						deferred.reject('FirebaseFactory [delete] of ' + path + ' failed with error code ' + error.code);
+					} else {
+						deferred.resolve();
+					}
+				});
+
+				return deferred.promise;
+			},
+
+			getOnce: function(path) {
+				var deferred = $q.defer();
+
+				var ref = baseRef.child(path);
+				ref.once('value', function(data) {
+					deferred.resolve(data.val());
+				}, function(error) {
+					console.warn('FirebaseFactory [getOnce] of ' + path + ' failed: %o', error);
+					deferred.reject('FirebaseFactory [getOnce] of ' + path + ' failed with error code ' + error.code);
+				});
+
+				return deferred.promise;
+			},
+
+			getAsArray: function(path, config) {
+				var ref = baseRef.child(path);
+
+				return $firebase(ref, config).$asArray();
+			},
+
+			getAsObject: function(path, config) {
+				var ref = baseRef.child(path);
+
+				return $firebase(ref, config).$asObject();
+			},
+
+			set: function(path, object) {
+				var deferred = $q.defer();
+
+				var ref = baseRef.child(path);
+				ref.set(object, function(error) {
+					if (error) {
+						console.warn('FirebaseFactory [set] of ' + path + ' failed: %o', error);
+						deferred.reject('FirebaseFactory [set] of ' + path + ' failed with error code ' + error.code);
+					} else {
+						deferred.resolve();
+					}
+				});
+
+				return deferred.promise;
+			},
+
+			update: function(path, object) {
+				var deferred = $q.defer();
+
+				var sync = $firebase(baseRef.child(path));
+				sync.$update(object)
+				.then(function(ref) {
+					deferred.resolve(ref.key());
+				}, function(error) {
+					console.warn('FirebaseFactory [update] of %o to ' + path + ' failed: %o', object, error);
+					deferred.reject('FirebaseFactory [update] of %o to ' + path + ' failed with error code ' + error.code, object);
+				});
+
+				return deferred.promise;
+			},
+
+			push: function(path, object) {
+				var deferred = $q.defer();
+
+				var sync = $firebase(baseRef.child(path));
+				sync.$push(object)
+				.then(function(ref) {
+					deferred.resolve(ref.key());
+				}, function(error) {
+					console.warn('FirebaseFactory [push] of %o to ' + path + ' failed: %o', object, error);
+					deferred.reject('FirebaseFactory [push] of %o to ' + path + ' failed with error code ' + error.code, object);
+				});
+
+				return deferred.promise;
+			}
+		};
+
+		return ret;
+	}])
+
+	.factory('ObjectCache', ['$firebase', function ($firebase) {
+		return function (ref) {
+			var cached = {};
+
+			// Fills cache with
+			cached.$init = function() {
+				ref.on('child_added', function(snapshot) {
+					cached.$load(snapshot.key());
+				});
+			};
+
+			// Load object into cache
+			cached.$load = function (id) {
+				if( !cached.hasOwnProperty(id) ) {
+					cached[id] = $firebase(ref.child(id)).$asObject();
+				}
+
+				return cached[id];
+			};
+
+			// Frees memory and stops listening on objects.
+			// Use this when you switch views in your SPA and no longer need this list.
+			cached.$dispose = function () {
+				angular.forEach(cached, function (object) {
+					object.$destroy();
+				});
+			};
+
+			// Removes an object, both form cache and on Firebase
+			cached.$remove = function(id) {
+				delete cached[id];
+				ref.child(id).remove();
+			};
+
+			return cached;
+		};
+	}]);
 
 }());
 (function() {
@@ -1418,6 +1334,90 @@
   'use strict';
 
   angular.module('user', ['user.service']);
+
+}());
+(function() {
+  'use strict';
+
+  angular.module('menu.controller', ['common', 'auth'])
+  .controller('MenuController', ['AuthService', function (AuthService) {
+    this.name = '';
+
+    var self = this;
+    AuthService.watch(function(authData) {
+      if (authData) {
+        if (authData.provider === 'password') {
+          self.name = authData.password.email;
+        } else if (authData.provider === 'facebook' || authData.provider === 'twitter' || authData.provider === 'google') {
+          self.name = authData[authData.provider].displayName;
+        } else {
+          self.name = '';
+        }
+      } else {
+        self.name = '';
+      }
+    });
+
+  }]);
+
+}());
+(function () {
+  'use strict';
+
+  angular.module('menu.directive', ['menu.controller'])
+  .directive('siteMenu', function() {
+    return {
+      restrict: 'E',
+      scope: true,
+      templateUrl: 'app/menu/menu.tpl.html',
+      controller: 'MenuController',
+      controllerAs: 'menuCtrl'
+    };
+  });
+
+}());
+(function () {
+  'use strict';
+
+  angular.module('menu', ['menu.directive', 'menu.controller']);
+
+}());
+(function () {
+  'use strict';
+
+  angular.module('welcome', ['menu'])
+
+  .config(['$stateProvider', function($stateProvider) {
+    $stateProvider
+    .state('welcome', {
+      url: '/welcome',
+      templateUrl: 'app/welcome/welcome.tpl.html',
+      controller: 'WelcomeController',
+      controllerAs: 'welcomeCtrl'
+    });
+  }])
+
+  .controller('WelcomeController', ['$filter', function($filter) {
+
+    this.snippet = {
+      content: 'Hello <b>NAME</b>! I can see that you are working for <b>COMPANY</b> and I thought you might be interested in our service. It makes it possible to use variables in snippets of text. It even supports Markdown and copy to clipboard as HTML.<br /><br /><br/> <b>NAME</b> when did I last tell you that you were awesome?',
+      variables: [{
+        tag: 'NAME',
+        placeholder:'Your name'
+      },{
+        tag: 'COMPANY',
+        placeholder:'Where you work'
+      }]
+    };
+
+    this.copyAsMarkdown = function(snippet) {
+      return $filter('tagFill')(snippet, this.values);
+    };
+
+    this.copyAsHTML = function(snippet) {
+      return $filter('ngMarkdown')(this.copyAsMarkdown(snippet));
+    };
+  }]);
 
 }());
 //# sourceMappingURL=maps/app.js.map
