@@ -19,7 +19,7 @@
     <div class="col-md-2">
       <button class="btn btn-success btn-block" type="button" ng-click="homeCtrl.openSnippet()"><i class="fa fa-plus-circle"></i> Snipp'it</button>
       <div class="snippetEnabler" ng-repeat="(key, snippet) in homeCtrl.currentLetter.snippets">
-        <label><input type="checkbox" ng-model="snippet.enabled" ng-click="homeCtrl.enableSnippet(key, !!snippet.enabled)"><div class="checkboxText" style="float:right; margin-left: 5px;">{{snippet.title}}</div></label>
+        <label><input type="checkbox" ng-model="snippet.enabled" ng-click="homeCtrl.enableSnippet(key, !!snippet.enabled)"><span style="margin-left: 5px;">{{snippet.title}}</span></label>
         <span class="pull-right">
           <button class="btn btn-default btn-xs" type="button" ng-click="homeCtrl.openSnippet(key)"><i class="fa fa-pencil"></i></button>
         </span>
@@ -27,10 +27,10 @@
     </div>
 
     <div class="col-md-3" ng-init="homeCtrl.values = {}">
-      <div class="snippetEdit" ng-repeat="snippet in homeCtrl.currentLetter.snippets" ng-if="snippet.enabled">
-        <p class="lead" style="margin-bottom: 5px;">{{snippet.title}}</p>
+      <div class="snippetEdit" ng-repeat="snippet in homeCtrl.currentLetter.snippets" ng-if="snippet.enabled && snippet.variables.length > 0">
+        <h4 style="margin-top: 0;">{{snippet.title}}</h4>
         <div class="form-group" ng-repeat="variable in snippet.variables">
-          <input class="form-control" placeholder="{{variable.tag}}" ng-model="homeCtrl.values[variable.tag]">
+          <input class="form-control input-sm" placeholder="{{variable.tag}}" ng-model="homeCtrl.values[variable.tag]">
         </div>
       </div>
     </div>

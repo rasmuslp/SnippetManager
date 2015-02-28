@@ -4,13 +4,11 @@
 </div>
 
 <div class="modal-body">
-  <div class="letterListItem" ng-repeat="letter in letterListCtrl.letters" ng-class="{'text-primary': letter.$id === letterListCtrl.currentLetter.$id}">
-    <span class="letterListItemTitle" ng-click="letterListCtrl.selectLetter(letter.$id)">
-      {{letter.title}}
-    </span>
-    <span class="pull-right">
-      <button class="btn btn-default btn-xs" type="button" ng-click="letterListCtrl.openLetter(letter.$id)"><i class="fa fa-pencil"></i></button>
-    </span>
+  <div class="letterListItem" ng-repeat="letter in letterListCtrl.letters">
+    <div class="btn-group" role="group">
+      <button class="btn btn-default" type="button" ng-click="letterListCtrl.selectLetter(letter.$id)" ng-class="{'active': letter.$id === letterListCtrl.currentLetter.$id}">{{letter.title}}</button>
+      <button class="btn btn-default" type="button" ng-click="letterListCtrl.openLetter(letter.$id)"><i class="fa fa-pencil"></i></button>
+    </div>
   </div>
 </div>
 

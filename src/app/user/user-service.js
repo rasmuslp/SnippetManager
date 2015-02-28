@@ -174,7 +174,7 @@
               return FirebaseFactory.push(base + uid + '/letters/' + letterId + '/snippets/', {
                 title: 'Click me !',
                 enabled: false,
-                content: '### Snipp\'it\nA letter consists of snippits. A snippit has a template text and some keywords that replaces said keywords in the text. Try it out by entering a word HERE!',
+                content: '### Snipp\'it\nA letter consists of snippets. A snippet has a template text and some keywords that replaces said keywords in the text. Try it out by entering a word HERE!',
                 variables: [{
                   tag: 'HERE'
                 }]
