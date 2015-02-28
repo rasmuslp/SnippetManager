@@ -3,10 +3,11 @@
 
 	angular.module('auth', ['ngMessages', 'auth.service', 'auth.controller', 'auth.directives'])
 
+	.constant('loginState', 'auth.login')
 	.constant('welcomeNoAuthState', 'welcome')
 	.constant('welcomeAuthState', 'home.home')
 
-	.config(function($urlRouterProvider, $stateProvider, welcomeNoAuthState, welcomeAuthState) {
+	.config(function($urlRouterProvider, $stateProvider, loginState, welcomeNoAuthState, welcomeAuthState) {
 		$urlRouterProvider.otherwise('/redirect');
 
 		$stateProvider
@@ -19,13 +20,16 @@
 				}
 			}
 		})
-		.state('auth.login', {
+		.state(loginState, {
 			url: '/login',
-			templateUrl: 'app/auth/auth.tpl.html',
+			templateUrl: 'app/auth/auth.page.tpl.html',
 			controller: 'AuthController',
 			controllerAs: 'authCtrl',
 			resolve: {
 				'signup': function() {
+					return false;
+				},
+				'$modalInstance': function() {
 					return false;
 				}
 			}
@@ -58,7 +62,7 @@
 		});
 	})
 
-	.run(function($rootScope, $state, welcomeAuthState, AuthService) {
+	.run(function($rootScope, $state, loginState, welcomeAuthState, AuthService) {
 		AuthService.watch(function(newAuth, oldAuth) {
 			// Just logged in
 			if (newAuth && (angular.isUndefined(oldAuth) || oldAuth === null)) {
@@ -89,7 +93,7 @@
 			// Should auth status change while viewing a state requiring auth, the user is redirected to login
 			if (!newAuth && routeRequiresAuth($state.current)) {
 				console.warn('Auth is required for the state you are viewing: "' + $state.current.name + '". Redirecting you to login.');
-				$state.go('auth.login');
+				$state.go(loginState);
 			}
 		}, $rootScope);
 
@@ -100,7 +104,7 @@
 		$rootScope.$on('$stateChangeError', function(event, toState, toParams, fromState, fromParams, error) {
 			if(angular.isObject(error) && error.authRequired) {
 				console.warn('Auth required for transitioning to state: "' +  toState.name + '". Redirecting you to login.');
-				$state.go('auth.login');
+				$state.go(loginState);
 			}
 		});
 	});

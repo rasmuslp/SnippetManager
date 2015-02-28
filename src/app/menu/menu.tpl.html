@@ -18,7 +18,7 @@
         <li ui-sref-active="active" show-authed><a ui-sref="home.home">Home</a></li>
       </ul>
       <ul class="nav navbar-nav navbar-right">
-        <li ui-sref-active="active" hide-authed><a ui-sref="auth.login">Login</a></li>
+        <li ui-sref-active="active" hide-authed><a ng-click="menuCtrl.openAuth()">Login</a></li>
         <li class="dropdown" show-authed>
           <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-expanded="false">{{menuCtrl.name}} <i class="fa fa-caret-down"></i></a>
           <ul class="dropdown-menu" role="menu">
