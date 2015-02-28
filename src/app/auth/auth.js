@@ -1,7 +1,7 @@
 (function () {
 	'use strict';
 
-	angular.module('auth', ['ngMessages', 'auth.service', 'auth.controller', 'auth.directives'])
+	angular.module('auth', ['ngMessages', 'auth.service', 'auth.lang', 'auth.controller', 'auth.directives'])
 
 	.constant('loginState', 'auth.login')
 	.constant('welcomeNoAuthState', 'welcome')
@@ -45,9 +45,8 @@
 		.state('auth.redirect', {
 			url: '/redirect',
 			templateUrl: 'app/auth/auth-pre.tpl.html',
-			controller: function($state) {
-				$state.go('auth.authenticating');
-			}
+			controller: 'AuthCheckController',
+			controllerAs: 'authCtrl'
 		})
 		.state('auth.authenticating', {
 			controller: function(auth, $state) {

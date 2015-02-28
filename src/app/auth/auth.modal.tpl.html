@@ -1,7 +1,7 @@
 <div class="modal-header">
   <button type="button" class="close" aria-label="Close" ng-click="authCtrl.close()"><span aria-hidden="true">&times;</span></button>
-  <h4 ng-if="authCtrl.signup" class="modal-title">Sign up <small>or</small> <a href="#" role="button" ng-click="authCtrl.signup = false">login</a></h4>
-  <h4 ng-if="!authCtrl.signup" class="modal-title">Login <small>or</small> <a href="#" role="button" ng-click="authCtrl.signup = true">sign up</a></h4>
+  <h4 ng-if="authCtrl.signup" class="modal-title">{{authCtrl.lang.get('Signup')}} <small>{{authCtrl.lang.get('or')}}</small> <a href="#" role="button" ng-click="authCtrl.signup = false">{{authCtrl.lang.get('login')}}</a></h4>
+  <h4 ng-if="!authCtrl.signup" class="modal-title">{{authCtrl.lang.get('Login')}} <small>{{authCtrl.lang.get('or')}}</small> <a href="#" role="button" ng-click="authCtrl.signup = true">{{authCtrl.lang.get('signup')}}</a></h4>
 </div>
 
 <div class="modal-body">
@@ -9,5 +9,5 @@
 </div>
 
 <div class="modal-footer">
-  <button type="button" class="btn btn-default" ng-click="authCtrl.cancel()">Cancel</button>
+  <button type="button" class="btn btn-default" ng-click="authCtrl.cancel()">{{authCtrl.lang.get('Cancel')}}</button>
 </div>

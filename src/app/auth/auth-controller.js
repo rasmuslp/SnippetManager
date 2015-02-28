@@ -1,7 +1,12 @@
 (function () {
 	'use strict';
 
-	angular.module('auth.controller', ['auth.service'])
+	angular.module('auth.controller', ['auth.service', 'auth.lang'])
+
+	.controller('AuthCheckController', function($state, AuthLanguage) {
+		this.lang = AuthLanguage;
+		$state.go('auth.authenticating');
+	})
 
 	.constant('errorsToView', [
 		// Email
@@ -21,10 +26,12 @@
 		'USER_DENIED'
 	])
 
-	.controller('AuthController', function($state, errorsToView, AuthService, signup, auth, $modalInstance) {
+	.controller('AuthController', function($state, errorsToView, AuthService, AuthLanguage, signup, auth, $modalInstance) {
 		if (auth !== null) {
 			$state.go('auth.redirect');
 		}
+
+		this.lang = AuthLanguage;
 
 		this.signup = signup;
 

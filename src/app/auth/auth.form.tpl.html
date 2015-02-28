@@ -2,70 +2,70 @@
   <div class="form-group">
     <div class="input-group">
       <span class="input-group-addon"><i class="fa fa-envelope-o fa-fw"></i></span>
-      <input class="form-control" ng-disabled="authCtrl.working" name="email" type="email" placeholder="Email address" ng-model="authCtrl.user.email">
+      <input class="form-control" ng-disabled="authCtrl.working" name="email" type="email" placeholder="{{authCtrl.lang.get('emailPlaceholder')}}" ng-model="authCtrl.user.email">
     </div>
     <div class="form-sub text-danger">
       <div ng-messages="authForm.email.$error" ng-if="authForm.$submitted || authForm.email.$touched">
-        <div ng-message="required">Enter your email address</div>
-        <div ng-message="email">This does not look like an email address</div>
+        <div ng-message="required">{{authCtrl.lang.get('emailReq')}}</div>
+        <div ng-message="email">{{authCtrl.lang.get('emailLike')}}</div>
       </div>
       <div ng-if="authCtrl.error.code === 'EMAIL_TAKEN'">
-        This email address is already registered
+        {{authCtrl.lang.get('emailTaken')}}
       </div>
       <div ng-if="authCtrl.error.code === 'INVALID_EMAIL'">
-        Invalid email address
+        {{authCtrl.lang.get('emailInvalid')}}
       </div>
       <div ng-if="authCtrl.error.code === 'INVALID_USER'">
-        This account does not exist
+        {{authCtrl.lang.get('userInvalid')}}
       </div>
     </div>
   </div>
   <div class="form-group">
     <div class="input-group">
       <span class="input-group-addon"><i class="fa fa-key fa-fw"></i></span>
-      <input class="form-control" ng-disabled="authCtrl.working" name="password" type="password" placeholder="Password" ng-model="authCtrl.user.password" required minlength="8">
+      <input class="form-control" ng-disabled="authCtrl.working" name="password" type="password" placeholder="{{authCtrl.lang.get('passwordPlaceholder')}}" ng-model="authCtrl.user.password" required minlength="8">
     </div>
     <div class="form-sub text-danger">
       <div ng-messages="authForm.password.$error" ng-if="authForm.$submitted || authForm.password.$touched">
-        <div ng-message="required">Enter a password</div>
-        <div ng-message="minlength">The password must be at least 8 characters</div>
+        <div ng-message="required">{{authCtrl.lang.get('passwordReq')}}</div>
+        <div ng-message="minlength">{{authCtrl.lang.get('passwordMin')}}</div>
       </div>
       <div ng-if="authCtrl.error.code === 'INVALID_PASSWORD'">
-        Invalid password
+        {{authCtrl.lang.get('passwordInvalid')}}
       </div>
     </div>
   </div>
   <div class="form-group" ng-if="authCtrl.signup">
     <div class="input-group">
       <span class="input-group-addon"><i class="fa fa-key fa-fw"></i></span>
-      <input class="form-control" ng-disabled="authCtrl.working" name="passwordConfirm" type="password" placeholder="Confirm password" ng-model="authCtrl.user.passwordConfirm" required minlength="8" compare-to-validator="authCtrl.user.password">
+      <input class="form-control" ng-disabled="authCtrl.working" name="passwordConfirm" type="password" placeholder="{{authCtrl.lang.get('passwordConfirmPlaceholder')}}" ng-model="authCtrl.user.passwordConfirm" required minlength="8" compare-to-validator="authCtrl.user.password">
     </div>
     <div class="form-sub text-danger">
       <div ng-messages="authForm.passwordConfirm.$error" ng-if="authForm.$submitted || authForm.passwordConfirm.$touched">
-        <div ng-message="required">Repeat the password</div>
-        <div ng-message="compareTo">The passwords does not match</div>
+        <div ng-message="required">{{authCtrl.lang.get('passwordRepeat')}}</div>
+        <div ng-message="compareTo">{{authCtrl.lang.get('passwordMatch')}}</div>
       </div>
     </div>
   </div>
   <div class="checkbox text-center">
     <label>
       <input ng-disabled="authCtrl.working" type="checkbox" id="authRemember" ng-model="authCtrl.user.remember">
-      Remember me
+      {{authCtrl.lang.get('remember')}}
     </label>
   </div>
   <button class="btn btn-lg btn-primary btn-block" ng-disabled="authCtrl.working" type="submit">
-    <span ng-if="authCtrl.signup && !authCtrl.working">Create account</span>
-    <span ng-if="!authCtrl.signup && !authCtrl.working">Login</span>
-    <span ng-if="authCtrl.working"><i class="fa fa-circle-o-notch fa-spin"></i> Working...</span>
+    <span ng-if="authCtrl.signup && !authCtrl.working">{{authCtrl.lang.get('createAccount')}}</span>
+    <span ng-if="!authCtrl.signup && !authCtrl.working">{{authCtrl.lang.get('Login')}}</span>
+    <span ng-if="authCtrl.working"><i class="fa fa-circle-o-notch fa-spin"></i> {{authCtrl.lang.get('working')}}...</span>
   </button>
   <div ng-if="authCtrl.error.code === 'NETWORK_ERROR'" class="auth-error text-center text-danger">
-    Network error, try again
+    {{authCtrl.lang.get('networkError')}}
   </div>
   <div ng-if="authCtrl.error.code === 'GENERAL_ERROR'" class="auth-error text-center text-danger">
-    An unexpected error occurred
+    {{authCtrl.lang.get('generalError')}}
   </div>
   <div id="social-auth" class="text-center" ng-if="!authCtrl.signup">
-    or login with one of these
+    {{authCtrl.lang.get('orSocial')}}
     <ul>
       <li><a ng-click="authCtrl.login3rdParty('facebook')"><i class="fa fa-3x fa-facebook-official"></i></a></li>
       <li><a ng-click="authCtrl.login3rdParty('google')"><i class="fa fa-3x fa-google"></i></a></li>
@@ -74,13 +74,13 @@
   </div>
   <div class="form-sub text-danger">
     <div ng-if="authCtrl.error.code === 'PROVIDER_ERROR'">
-      An error occurred at {{authCtrl.error.provider}}
+      {{authCtrl.lang.get('providerError')}} {{authCtrl.error.provider}}
     </div>
     <div ng-if="authCtrl.error.code === 'USER_CANCELLED'">
-      The authentication at {{authCtrl.error.provider}} was cancelled
+      {{authCtrl.lang.get('providerAuthenticationError')}} {{authCtrl.error.provider}} {{authCtrl.lang.get('userCancel')}}
     </div>
     <div ng-if="authCtrl.error.code === 'USER_DENIED'">
-      The authentication at {{authCtrl.error.provider}} was denied
+      {{authCtrl.lang.get('providerAuthenticationError')}} {{authCtrl.error.provider}} {{authCtrl.lang.get('userDenied')}}
     </div>
   </div>
 </form>
