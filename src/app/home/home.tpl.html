@@ -17,7 +17,7 @@
   <div class="row">
 
     <div class="col-md-2">
-      <button class="btn btn-success btn-block" type="button" ng-click="homeCtrl.openSnippet()"><i class="fa fa-plus-circle"></i> Snippt</button>
+      <button class="btn btn-success btn-block" type="button" ng-click="homeCtrl.openSnippet()"><i class="fa fa-plus-circle"></i> Snipp'it</button>
       <div class="snippetEnabler" ng-repeat="(key, snippet) in homeCtrl.currentLetter.snippets">
         <label><input type="checkbox" ng-model="snippet.enabled" ng-click="homeCtrl.enableSnippet(key, !!snippet.enabled)"><div class="checkboxText" style="float:right; margin-left: 5px;">{{snippet.title}}</div></label>
         <span class="pull-right">
