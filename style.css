@@ -53,31 +53,28 @@
   background: rgba(0, 0, 0, 0.8);
   border: 0;
 }
-#auth-content {
-  padding: 20px 0;
-}
-#auth-content .form-group .form-sub {
+#auth-form .form-group .form-sub {
   text-align: center;
   margin-top: 10px;
 }
-#auth-content .auth-error {
+#auth-form .auth-error {
   margin-top: 10px;
   border-top: 1px solid #e7e7e7;
   padding-top: 10px;
   margin-bottom: -5px;
 }
-#auth-content #social-auth {
+#auth-form #social-auth {
   margin-top: 15px;
   border-top: 1px solid #e7e7e7;
   padding-top: 10px;
   text-align: center;
 }
-#auth-content #social-auth ul {
+#auth-form #social-auth ul {
   margin: 10px 0 0 0;
   padding: 0;
   list-style: none;
 }
-#auth-content #social-auth ul li {
+#auth-form #social-auth ul li {
   display: inline;
   margin: 10px;
 }

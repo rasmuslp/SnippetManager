@@ -51,7 +51,25 @@
 
 	angular.module('auth.controller', ['auth.service'])
 
-	.controller('AuthController', ['$state', 'AuthService', 'signup', 'auth', function($state, AuthService, signup, auth) {
+	.constant('errorsToView', [
+		// Email
+		'EMAIL_TAKEN',
+		'INVALID_EMAIL',
+		'INVALID_USER',
+
+		// Password
+		'INVALID_PASSWORD',
+
+		// Common
+		'NETWORK_ERROR',
+
+		// Provider
+		'PROVIDER_ERROR',
+		'USER_CANCELLED',
+		'USER_DENIED'
+	])
+
+	.controller('AuthController', ['$state', 'errorsToView', 'AuthService', 'signup', 'auth', '$modalInstance', function($state, errorsToView, AuthService, signup, auth, $modalInstance) {
 		if (auth !== null) {
 			$state.go('auth.redirect');
 		}
@@ -70,35 +88,9 @@
 
 		var self = this;
 
-		var createAccount = function(email, password) {
-			return AuthService.create(email, password);
-		};
-
-		var login = function(email, password, remember) {
-			return AuthService.login(email, password, remember);
-		};
-
 		var errorHandler = function(error) {
 			if (error) {
-				//TODO: Some of thee might contain details that should be logged ?
-				var errorsToView = [
-					// Email
-					'EMAIL_TAKEN',
-					'INVALID_EMAIL',
-					'INVALID_USER',
-
-					// Password
-					'INVALID_PASSWORD',
-
-					// Common
-					'NETWORK_ERROR',
-
-					// Provider
-					'PROVIDER_ERROR',
-					'USER_CANCELLED',
-					'USER_DENIED'
-				];
-
+				//TODO: Some of the errors from errorsToView might contain details that should be logged
 				if (errorsToView.indexOf(error.code) === -1) {
 					//TODO: Log
 					console.error('AuthController [submit]: Error');
@@ -125,9 +117,14 @@
 
 				var user = this.user;
 
-				createAccount(user.email, user.password)
+				AuthService.create(this.user.email, this.user.password)
 				.then(function() {
-					return login(user.email, user.password, user.remember);
+					return AuthService.login(user.email, user.password, user.remember);
+				})
+				.then(function() {
+					if ($modalInstance) {
+						$modalInstance.close();
+					}
 				})
 				.catch(function(error) {
 					errorHandler(error);
@@ -138,7 +135,12 @@
 			} else {
 				console.log('AuthController [submit]: Login!');
 
-				login(this.user.email, this.user.password, this.user.remember)
+				AuthService.login(this.user.email, this.user.password, this.user.remember)
+				.then(function() {
+					if ($modalInstance) {
+						$modalInstance.close();
+					}
+				})
 				.catch(function(error) {
 					errorHandler(error);
 				})
@@ -153,9 +155,22 @@
 			this.error.provider = provider.capitalize();
 
 			AuthService.login3rdParty(provider)
+			.then(function() {
+				if ($modalInstance) {
+					$modalInstance.close();
+				}
+			})
 			.catch(function(error) {
 				errorHandler(error);
 			});
+		};
+
+		this.close = function() {
+			$modalInstance.close();
+		};
+
+		this.cancel = function() {
+			$modalInstance.dismiss();
 		};
 
 	}]);
@@ -359,10 +374,11 @@
 
 	angular.module('auth', ['ngMessages', 'auth.service', 'auth.controller', 'auth.directives'])
 
+	.constant('loginState', 'auth.login')
 	.constant('welcomeNoAuthState', 'welcome')
 	.constant('welcomeAuthState', 'home.home')
 
-	.config(['$urlRouterProvider', '$stateProvider', 'welcomeNoAuthState', 'welcomeAuthState', function($urlRouterProvider, $stateProvider, welcomeNoAuthState, welcomeAuthState) {
+	.config(['$urlRouterProvider', '$stateProvider', 'loginState', 'welcomeNoAuthState', 'welcomeAuthState', function($urlRouterProvider, $stateProvider, loginState, welcomeNoAuthState, welcomeAuthState) {
 		$urlRouterProvider.otherwise('/redirect');
 
 		$stateProvider
@@ -375,13 +391,16 @@
 				}]
 			}
 		})
-		.state('auth.login', {
+		.state(loginState, {
 			url: '/login',
-			templateUrl: 'app/auth/auth.tpl.html',
+			templateUrl: 'app/auth/auth.page.tpl.html',
 			controller: 'AuthController',
 			controllerAs: 'authCtrl',
 			resolve: {
 				'signup': function() {
+					return false;
+				},
+				'$modalInstance': function() {
 					return false;
 				}
 			}
@@ -414,7 +433,7 @@
 		});
 	}])
 
-	.run(['$rootScope', '$state', 'welcomeAuthState', 'AuthService', function($rootScope, $state, welcomeAuthState, AuthService) {
+	.run(['$rootScope', '$state', 'loginState', 'welcomeAuthState', 'AuthService', function($rootScope, $state, loginState, welcomeAuthState, AuthService) {
 		AuthService.watch(function(newAuth, oldAuth) {
 			// Just logged in
 			if (newAuth && (angular.isUndefined(oldAuth) || oldAuth === null)) {
@@ -445,7 +464,7 @@
 			// Should auth status change while viewing a state requiring auth, the user is redirected to login
 			if (!newAuth && routeRequiresAuth($state.current)) {
 				console.warn('Auth is required for the state you are viewing: "' + $state.current.name + '". Redirecting you to login.');
-				$state.go('auth.login');
+				$state.go(loginState);
 			}
 		}, $rootScope);
 
@@ -456,9 +475,200 @@
 		$rootScope.$on('$stateChangeError', function(event, toState, toParams, fromState, fromParams, error) {
 			if(angular.isObject(error) && error.authRequired) {
 				console.warn('Auth required for transitioning to state: "' +  toState.name + '". Redirecting you to login.');
-				$state.go('auth.login');
+				$state.go(loginState);
 			}
 		});
+	}]);
+
+}());
+(function () {
+	/* jshint -W121 */
+
+	'use strict';
+
+	angular.module('common', ['common.config', 'common.firebase.factory', 'common.filters']);
+	String.prototype.capitalize = function() {
+    return this.charAt(0).toUpperCase() + this.slice(1);
+	};
+
+}());
+(function () {
+	'use strict';
+
+	angular.module('common.config', [])
+	.constant('FB', 'https://snippetmanager.firebaseio.com/');
+
+}());
+(function () {
+  'use strict';
+
+
+  angular.module('common.filters', [])
+
+  .filter('tagFill', function () {
+    return function(snippet, values) {
+      var text = snippet.content;
+      var newText = text;
+      for (var variableIndex in snippet.variables) {
+        if (snippet.variables.hasOwnProperty(variableIndex)) {
+
+          var variable = snippet.variables[variableIndex];
+          if (values.hasOwnProperty(variable.tag) && values[variable.tag].length > 0) {
+            newText = newText.replace(new RegExp(variable.tag, 'g'), values[variable.tag]);
+          } else if (variable.placeholder && variable.placeholder.length > 0) {
+            newText = newText.replace(new RegExp(variable.tag, 'g'), '(' + variable.placeholder + ')');
+          }
+        }
+      }
+
+      return newText;
+    };
+  })
+
+  .filter('html', ['$sce', function($sce) {
+    return function(val) {
+      return $sce.trustAsHtml(val);
+    };
+  }]);
+
+}());
+(function() {
+	'use strict';
+
+	angular.module('common.firebase.factory', ['firebase'])
+
+	.factory('FirebaseFactory', ['FB', '$q', '$firebase', function(FB, $q, $firebase) {
+		var baseRef = new Firebase(FB);
+
+		var ret = {
+			delete: function(path) {
+				var deferred = $q.defer();
+
+				var ref = baseRef.child(path);
+				ref.set({}, function(error) {
+					if (error) {
+						console.warn('FirebaseFactory [delete] of ' + path + ' failed: %o', error);
+						deferred.reject('FirebaseFactory [delete] of ' + path + ' failed with error code ' + error.code);
+					} else {
+						deferred.resolve();
+					}
+				});
+
+				return deferred.promise;
+			},
+
+			getOnce: function(path) {
+				var deferred = $q.defer();
+
+				var ref = baseRef.child(path);
+				ref.once('value', function(data) {
+					deferred.resolve(data.val());
+				}, function(error) {
+					console.warn('FirebaseFactory [getOnce] of ' + path + ' failed: %o', error);
+					deferred.reject('FirebaseFactory [getOnce] of ' + path + ' failed with error code ' + error.code);
+				});
+
+				return deferred.promise;
+			},
+
+			getAsArray: function(path, config) {
+				var ref = baseRef.child(path);
+
+				return $firebase(ref, config).$asArray();
+			},
+
+			getAsObject: function(path, config) {
+				var ref = baseRef.child(path);
+
+				return $firebase(ref, config).$asObject();
+			},
+
+			set: function(path, object) {
+				var deferred = $q.defer();
+
+				var ref = baseRef.child(path);
+				ref.set(object, function(error) {
+					if (error) {
+						console.warn('FirebaseFactory [set] of ' + path + ' failed: %o', error);
+						deferred.reject('FirebaseFactory [set] of ' + path + ' failed with error code ' + error.code);
+					} else {
+						deferred.resolve();
+					}
+				});
+
+				return deferred.promise;
+			},
+
+			update: function(path, object) {
+				var deferred = $q.defer();
+
+				var sync = $firebase(baseRef.child(path));
+				sync.$update(object)
+				.then(function(ref) {
+					deferred.resolve(ref.key());
+				}, function(error) {
+					console.warn('FirebaseFactory [update] of %o to ' + path + ' failed: %o', object, error);
+					deferred.reject('FirebaseFactory [update] of %o to ' + path + ' failed with error code ' + error.code, object);
+				});
+
+				return deferred.promise;
+			},
+
+			push: function(path, object) {
+				var deferred = $q.defer();
+
+				var sync = $firebase(baseRef.child(path));
+				sync.$push(object)
+				.then(function(ref) {
+					deferred.resolve(ref.key());
+				}, function(error) {
+					console.warn('FirebaseFactory [push] of %o to ' + path + ' failed: %o', object, error);
+					deferred.reject('FirebaseFactory [push] of %o to ' + path + ' failed with error code ' + error.code, object);
+				});
+
+				return deferred.promise;
+			}
+		};
+
+		return ret;
+	}])
+
+	.factory('ObjectCache', ['$firebase', function ($firebase) {
+		return function (ref) {
+			var cached = {};
+
+			// Fills cache with
+			cached.$init = function() {
+				ref.on('child_added', function(snapshot) {
+					cached.$load(snapshot.key());
+				});
+			};
+
+			// Load object into cache
+			cached.$load = function (id) {
+				if( !cached.hasOwnProperty(id) ) {
+					cached[id] = $firebase(ref.child(id)).$asObject();
+				}
+
+				return cached[id];
+			};
+
+			// Frees memory and stops listening on objects.
+			// Use this when you switch views in your SPA and no longer need this list.
+			cached.$dispose = function () {
+				angular.forEach(cached, function (object) {
+					object.$destroy();
+				});
+			};
+
+			// Removes an object, both form cache and on Firebase
+			cached.$remove = function(id) {
+				delete cached[id];
+				ref.child(id).remove();
+			};
+
+			return cached;
+		};
 	}]);
 
 }());
@@ -797,195 +1007,107 @@
   }]);
 
 }());
-(function () {
-	/* jshint -W121 */
+(function() {
+  'use strict';
 
-	'use strict';
+  angular.module('menu.controller', ['common', 'auth'])
+  .controller('MenuController', ['$state', '$modal', 'AuthService', 'loginState', function ($state, $modal, AuthService, loginState) {
+    this.name = '';
 
-	angular.module('common', ['common.config', 'common.firebase.factory', 'common.filters']);
-	String.prototype.capitalize = function() {
-    return this.charAt(0).toUpperCase() + this.slice(1);
-	};
+    var self = this;
+    AuthService.watch(function(authData) {
+      if (authData) {
+        if (authData.provider === 'password') {
+          self.name = authData.password.email;
+        } else if (authData.provider === 'facebook' || authData.provider === 'twitter' || authData.provider === 'google') {
+          self.name = authData[authData.provider].displayName;
+        } else {
+          self.name = '';
+        }
+      } else {
+        self.name = '';
+      }
+    });
 
-}());
-(function () {
-	'use strict';
+    this.openAuth = function() {
+      if ($state.current.name !== loginState) {
+        $modal.open({
+          size: 'sm',
+          templateUrl: 'app/auth/auth.modal.tpl.html',
+          controller: 'AuthController',
+          controllerAs: 'authCtrl',
+          resolve: {
+            'auth': ['AuthService', function(AuthService) {
+              return AuthService.getAuth();
+            }],
+            'signup': function() {
+              return false;
+            }
+          }
+        });
+      }
+    };
 
-	angular.module('common.config', [])
-	.constant('FB', 'https://snippetmanager.firebaseio.com/');
+  }]);
 
 }());
 (function () {
   'use strict';
 
-
-  angular.module('common.filters', [])
-
-  .filter('tagFill', function () {
-    return function(snippet, values) {
-      var text = snippet.content;
-      var newText = text;
-      for (var variableIndex in snippet.variables) {
-        if (snippet.variables.hasOwnProperty(variableIndex)) {
-
-          var variable = snippet.variables[variableIndex];
-          if (values.hasOwnProperty(variable.tag) && values[variable.tag].length > 0) {
-            newText = newText.replace(new RegExp(variable.tag, 'g'), values[variable.tag]);
-          } else if (variable.placeholder && variable.placeholder.length > 0) {
-            newText = newText.replace(new RegExp(variable.tag, 'g'), '(' + variable.placeholder + ')');
-          }
-        }
-      }
-
-      return newText;
+  angular.module('menu.directive', ['menu.controller'])
+  .directive('siteMenu', function() {
+    return {
+      restrict: 'E',
+      scope: true,
+      templateUrl: 'app/menu/menu.tpl.html',
+      controller: 'MenuController',
+      controllerAs: 'menuCtrl'
     };
-  })
-
-  .filter('html', ['$sce', function($sce) {
-    return function(val) {
-      return $sce.trustAsHtml(val);
-    };
-  }]);
+  });
 
 }());
-(function() {
-	'use strict';
+(function () {
+  'use strict';
 
-	angular.module('common.firebase.factory', ['firebase'])
+  angular.module('menu', ['menu.directive', 'menu.controller']);
 
-	.factory('FirebaseFactory', ['FB', '$q', '$firebase', function(FB, $q, $firebase) {
-		var baseRef = new Firebase(FB);
+}());
+(function () {
+  'use strict';
 
-		var ret = {
-			delete: function(path) {
-				var deferred = $q.defer();
+  angular.module('welcome', ['menu'])
 
-				var ref = baseRef.child(path);
-				ref.set({}, function(error) {
-					if (error) {
-						console.warn('FirebaseFactory [delete] of ' + path + ' failed: %o', error);
-						deferred.reject('FirebaseFactory [delete] of ' + path + ' failed with error code ' + error.code);
-					} else {
-						deferred.resolve();
-					}
-				});
+  .config(['$stateProvider', function($stateProvider) {
+    $stateProvider
+    .state('welcome', {
+      url: '/welcome',
+      templateUrl: 'app/welcome/welcome.tpl.html',
+      controller: 'WelcomeController',
+      controllerAs: 'welcomeCtrl'
+    });
+  }])
 
-				return deferred.promise;
-			},
+  .controller('WelcomeController', ['$filter', function($filter) {
 
-			getOnce: function(path) {
-				var deferred = $q.defer();
+    this.snippet = {
+      content: 'Hello <b>NAME</b>! I can see that you are working for <b>COMPANY</b> and I thought you might be interested in our service. It makes it possible to use variables in snippets of text. It even supports Markdown and copy to clipboard as HTML.<br /><br /><br/> <b>NAME</b> when did I last tell you that you were awesome?',
+      variables: [{
+        tag: 'NAME',
+        placeholder:'Your name'
+      },{
+        tag: 'COMPANY',
+        placeholder:'Where you work'
+      }]
+    };
 
-				var ref = baseRef.child(path);
-				ref.once('value', function(data) {
-					deferred.resolve(data.val());
-				}, function(error) {
-					console.warn('FirebaseFactory [getOnce] of ' + path + ' failed: %o', error);
-					deferred.reject('FirebaseFactory [getOnce] of ' + path + ' failed with error code ' + error.code);
-				});
+    this.copyAsMarkdown = function(snippet) {
+      return $filter('tagFill')(snippet, this.values);
+    };
 
-				return deferred.promise;
-			},
-
-			getAsArray: function(path, config) {
-				var ref = baseRef.child(path);
-
-				return $firebase(ref, config).$asArray();
-			},
-
-			getAsObject: function(path, config) {
-				var ref = baseRef.child(path);
-
-				return $firebase(ref, config).$asObject();
-			},
-
-			set: function(path, object) {
-				var deferred = $q.defer();
-
-				var ref = baseRef.child(path);
-				ref.set(object, function(error) {
-					if (error) {
-						console.warn('FirebaseFactory [set] of ' + path + ' failed: %o', error);
-						deferred.reject('FirebaseFactory [set] of ' + path + ' failed with error code ' + error.code);
-					} else {
-						deferred.resolve();
-					}
-				});
-
-				return deferred.promise;
-			},
-
-			update: function(path, object) {
-				var deferred = $q.defer();
-
-				var sync = $firebase(baseRef.child(path));
-				sync.$update(object)
-				.then(function(ref) {
-					deferred.resolve(ref.key());
-				}, function(error) {
-					console.warn('FirebaseFactory [update] of %o to ' + path + ' failed: %o', object, error);
-					deferred.reject('FirebaseFactory [update] of %o to ' + path + ' failed with error code ' + error.code, object);
-				});
-
-				return deferred.promise;
-			},
-
-			push: function(path, object) {
-				var deferred = $q.defer();
-
-				var sync = $firebase(baseRef.child(path));
-				sync.$push(object)
-				.then(function(ref) {
-					deferred.resolve(ref.key());
-				}, function(error) {
-					console.warn('FirebaseFactory [push] of %o to ' + path + ' failed: %o', object, error);
-					deferred.reject('FirebaseFactory [push] of %o to ' + path + ' failed with error code ' + error.code, object);
-				});
-
-				return deferred.promise;
-			}
-		};
-
-		return ret;
-	}])
-
-	.factory('ObjectCache', ['$firebase', function ($firebase) {
-		return function (ref) {
-			var cached = {};
-
-			// Fills cache with
-			cached.$init = function() {
-				ref.on('child_added', function(snapshot) {
-					cached.$load(snapshot.key());
-				});
-			};
-
-			// Load object into cache
-			cached.$load = function (id) {
-				if( !cached.hasOwnProperty(id) ) {
-					cached[id] = $firebase(ref.child(id)).$asObject();
-				}
-
-				return cached[id];
-			};
-
-			// Frees memory and stops listening on objects.
-			// Use this when you switch views in your SPA and no longer need this list.
-			cached.$dispose = function () {
-				angular.forEach(cached, function (object) {
-					object.$destroy();
-				});
-			};
-
-			// Removes an object, both form cache and on Firebase
-			cached.$remove = function(id) {
-				delete cached[id];
-				ref.child(id).remove();
-			};
-
-			return cached;
-		};
-	}]);
+    this.copyAsHTML = function(snippet) {
+      return $filter('ngMarkdown')(this.copyAsMarkdown(snippet));
+    };
+  }]);
 
 }());
 (function() {
@@ -1334,90 +1456,6 @@
   'use strict';
 
   angular.module('user', ['user.service']);
-
-}());
-(function() {
-  'use strict';
-
-  angular.module('menu.controller', ['common', 'auth'])
-  .controller('MenuController', ['AuthService', function (AuthService) {
-    this.name = '';
-
-    var self = this;
-    AuthService.watch(function(authData) {
-      if (authData) {
-        if (authData.provider === 'password') {
-          self.name = authData.password.email;
-        } else if (authData.provider === 'facebook' || authData.provider === 'twitter' || authData.provider === 'google') {
-          self.name = authData[authData.provider].displayName;
-        } else {
-          self.name = '';
-        }
-      } else {
-        self.name = '';
-      }
-    });
-
-  }]);
-
-}());
-(function () {
-  'use strict';
-
-  angular.module('menu.directive', ['menu.controller'])
-  .directive('siteMenu', function() {
-    return {
-      restrict: 'E',
-      scope: true,
-      templateUrl: 'app/menu/menu.tpl.html',
-      controller: 'MenuController',
-      controllerAs: 'menuCtrl'
-    };
-  });
-
-}());
-(function () {
-  'use strict';
-
-  angular.module('menu', ['menu.directive', 'menu.controller']);
-
-}());
-(function () {
-  'use strict';
-
-  angular.module('welcome', ['menu'])
-
-  .config(['$stateProvider', function($stateProvider) {
-    $stateProvider
-    .state('welcome', {
-      url: '/welcome',
-      templateUrl: 'app/welcome/welcome.tpl.html',
-      controller: 'WelcomeController',
-      controllerAs: 'welcomeCtrl'
-    });
-  }])
-
-  .controller('WelcomeController', ['$filter', function($filter) {
-
-    this.snippet = {
-      content: 'Hello <b>NAME</b>! I can see that you are working for <b>COMPANY</b> and I thought you might be interested in our service. It makes it possible to use variables in snippets of text. It even supports Markdown and copy to clipboard as HTML.<br /><br /><br/> <b>NAME</b> when did I last tell you that you were awesome?',
-      variables: [{
-        tag: 'NAME',
-        placeholder:'Your name'
-      },{
-        tag: 'COMPANY',
-        placeholder:'Where you work'
-      }]
-    };
-
-    this.copyAsMarkdown = function(snippet) {
-      return $filter('tagFill')(snippet, this.values);
-    };
-
-    this.copyAsHTML = function(snippet) {
-      return $filter('ngMarkdown')(this.copyAsMarkdown(snippet));
-    };
-  }]);
 
 }());
 //# sourceMappingURL=maps/app.js.map
