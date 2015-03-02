@@ -17,17 +17,25 @@
   <div class="row">
 
     <div class="col-md-2">
-      <button class="btn btn-success btn-block" type="button" ng-click="homeCtrl.openSnippet()"><i class="fa fa-plus-circle"></i> Snipp'it</button>
-      <div class="snippetEnabler" ng-repeat="(key, snippet) in homeCtrl.currentLetter.snippets">
-        <label><input type="checkbox" ng-model="snippet.enabled" ng-click="homeCtrl.enableSnippet(key, !!snippet.enabled)"><span style="margin-left: 5px;">{{snippet.title}}</span></label>
-        <span class="pull-right">
-          <button class="btn btn-default btn-xs" type="button" ng-click="homeCtrl.openSnippet(key)"><i class="fa fa-pencil"></i></button>
-        </span>
+      <button class="btn btn-success btn-block" style="margin-bottom: 10px;" type="button" ng-click="homeCtrl.openSnippet()"><i class="fa fa-plus-circle"></i> Snipp'it</button>
+      <ul class="snippetEnablerList list-unstyled" ng-if="homeCtrl.currentLetter.noSnippets() > 0" dnd-list="homeCtrl.dndSnippet">
+        <li ng-repeat="snippet in homeCtrl.snippetData" dnd-draggable="snippet" dnd-effect-allowed="move">
+          <label><input type="checkbox" ng-model="snippet.enabled" ng-click="homeCtrl.enableSnippet(snippet.$id, !!snippet.enabled)"><span style="margin-left: 5px;">{{snippet.title}}</span></label>
+          <span class="pull-right">
+            <button class="btn btn-default btn-xs" type="button" ng-click="homeCtrl.openSnippet(snippet.$id)"><i class="fa fa-pencil"></i></button>
+          </span>
+        </li>
+      </ul>
+      <div class="text-center" ng-if="homeCtrl.currentLetter.noSnippets() > 0">
+        <small class="text-muted">Drag and drop to reorder</small>
+      </div>
+      <div class="text-center" ng-if="homeCtrl.currentLetter.noSnippets() === 0">
+        <small class="text-muted">Add a Snipp'it!</small>
       </div>
     </div>
 
     <div class="col-md-3" ng-init="homeCtrl.values = {}">
-      <div class="snippetEdit" ng-repeat="snippet in homeCtrl.currentLetter.snippets" ng-if="snippet.enabled && snippet.variables.length > 0">
+      <div class="snippetEdit" ng-repeat="snippet in homeCtrl.snippetData" ng-if="snippet.enabled && snippet.variables.length > 0">
         <h4 style="margin-top: 0;">{{snippet.title}}</h4>
         <div class="form-group" ng-repeat="variable in snippet.variables">
           <input class="form-control input-sm" placeholder="{{variable.tag}}" ng-model="homeCtrl.values[variable.tag]">
@@ -36,7 +44,7 @@
     </div>
 
     <div class="col-md-7 animated" ng-class="{'fadeIn': homeCtrl.copyNotice}">
-      <div class="snippetContent" ng-repeat="snippet in homeCtrl.currentLetter.snippets" ng-if="snippet.enabled">
+      <div class="snippetContent" ng-repeat="snippet in homeCtrl.snippetData" ng-if="snippet.enabled">
         <div ng-bind-html="snippet | tagFill: homeCtrl.values | ngMarkdown | html"></div>
       </div>
     </div>

@@ -34,6 +34,9 @@
       },
 
       addSnippet: function(snippet) {
+        angular.extend(snippet, {
+          '.priority': this.noSnippets()
+        });
         return FirebaseFactory.push('/users/' + AuthService.uid() + '/letters/' + this.$id + '/snippets/', snippet);
       },
 
@@ -49,6 +52,18 @@
 
       saveSnippet: function(snippetId, snippet) {
         return FirebaseFactory.update('/users/' + AuthService.uid() + '/letters/' + this.$id + '/snippets/' + snippetId, snippet);
+      },
+
+      getSnippets: function() {
+        return FirebaseFactory.getAsArray('/users/' + AuthService.uid() + '/letters/' + this.$id + '/snippets/');
+      },
+
+      noSnippets: function() {
+        if (!this.snippets) {
+          return 0;
+        }
+
+        return Object.keys(this.snippets).length;
       }
     };
 

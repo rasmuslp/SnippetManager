@@ -18,15 +18,31 @@
 @fadeInSpeed: 500ms;
 @fadeOutSpeed: 300ms;
 
-.snippetEnabler {
-  margin-top:10px;
+.snippetEnablerList {
+  @snippetEnablerHeight: 35px;
 
-  &.ng-enter {
-    animation: fadeIn @fadeInSpeed;
+  min-height: @snippetEnablerHeight;
+
+  .dndDraggingSource {
+    display: none;
   }
 
-  &.ng-leave {
-    animation: fadeOut @fadeOutSpeed;
+  .dndPlaceholder {
+    min-height: @snippetEnablerHeight;
+    background-color: @border-color;
+    border-radius: .25em;
+  }
+
+  li {
+    padding: 5px 0;
+
+    &.ng-enter {
+      animation: fadeIn @fadeInSpeed;
+    }
+
+    &.ng-leave {
+      animation: fadeOut @fadeOutSpeed;
+    }
   }
 }
 
@@ -155,4 +171,9 @@
   // tmp backdrop fix: https://github.com/angular-ui/bootstrap/issues/2970
   bottom: 0;
   position: fixed;
+}
+
+// angular-drag-and-drop-lists
+ul[dnd-list], ul[dnd-list] > li {
+  position: relative;
 }
