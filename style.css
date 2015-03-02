@@ -8,14 +8,25 @@
   margin: 2px;
   width: 44px;
 }
-.snippetEnabler {
-  margin-top: 10px;
+.snippetEnablerList {
+  min-height: 35px;
 }
-.snippetEnabler.ng-enter {
+.snippetEnablerList .dndDraggingSource {
+  display: none;
+}
+.snippetEnablerList .dndPlaceholder {
+  min-height: 35px;
+  background-color: #e7e7e7;
+  border-radius: .25em;
+}
+.snippetEnablerList li {
+  padding: 5px 0;
+}
+.snippetEnablerList li.ng-enter {
   -webkit-animation: fadeIn 500ms;
           animation: fadeIn 500ms;
 }
-.snippetEnabler.ng-leave {
+.snippetEnablerList li.ng-leave {
   -webkit-animation: fadeOut 300ms;
           animation: fadeOut 300ms;
 }
@@ -112,6 +123,10 @@ li.active .fa-active {
 .modal-backdrop {
   bottom: 0;
   position: fixed;
+}
+ul[dnd-list],
+ul[dnd-list] > li {
+  position: relative;
 }
 
 /*# sourceMappingURL=maps/style.css.map */

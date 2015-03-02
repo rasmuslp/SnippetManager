@@ -49,7 +49,12 @@
 (function () {
 	'use strict';
 
-	angular.module('auth.controller', ['auth.service'])
+	angular.module('auth.controller', ['auth.service', 'auth.lang'])
+
+	.controller('AuthCheckController', ['$state', 'AuthLanguage', function($state, AuthLanguage) {
+		this.lang = AuthLanguage;
+		$state.go('auth.authenticating');
+	}])
 
 	.constant('errorsToView', [
 		// Email
@@ -69,10 +74,12 @@
 		'USER_DENIED'
 	])
 
-	.controller('AuthController', ['$state', 'errorsToView', 'AuthService', 'signup', 'auth', '$modalInstance', function($state, errorsToView, AuthService, signup, auth, $modalInstance) {
+	.controller('AuthController', ['$state', 'errorsToView', 'AuthService', 'AuthLanguage', 'signup', 'auth', '$modalInstance', function($state, errorsToView, AuthService, AuthLanguage, signup, auth, $modalInstance) {
 		if (auth !== null) {
 			$state.go('auth.redirect');
 		}
+
+		this.lang = AuthLanguage;
 
 		this.signup = signup;
 
@@ -248,6 +255,67 @@
 	}]);
 
 }());
+(function () {
+	'use strict';
+
+	angular.module('auth.lang', [])
+
+  .factory('AuthLanguage', function() {
+		var strings = {
+			// Common
+			'login': 'login',
+			'Login': 'Login',
+			'signup': 'sign up',
+			'Signup': 'Sign up',
+			'Cancel': 'cancel',
+
+			// Other
+      'check': 'Checking authentication',
+			'or': 'or',
+			'hasAccount': 'If you already have an account, you can login here.',
+			'noAccount': 'You don\'t have an account?',
+			'goToCreateAccount': 'Create an account here!',
+
+			// Form
+			'emailPlaceholder': 'Email address',
+			'emailReq': 'Enter your email address',
+			'emailLike': 'This does not look like an email address',
+			'emailTaken': 'This email address is already registered',
+			'emailInvalid': 'Invalid email address',
+			'userInvalid': 'This account does not exist',
+			'passwordPlaceholder': 'Password',
+			'passwordReq': 'Enter a password',
+			'passwordMin': 'The password must be at least 8 characters',
+			'passwordInvalid': 'Invalid password',
+			'passwordConfirmPlaceholder': 'Confirm password',
+			'passwordRepeat': 'Repeat the password',
+			'passwordMatch': 'The passwords does not match',
+			'remember': 'Remember me',
+			'createAccount': 'Create account',
+			'working': 'Working',
+			'networkError': 'Network error, try again',
+			'generalError': 'An unexpected error occurred',
+			'orSocial': 'or login with one of these',
+			'providerError': 'An error occurred at',
+			'providerAuthenticationError': 'The authentication at',
+			'userCancel': 'was cancelled',
+			'userDenied': 'was denied'
+
+		};
+
+    return {
+			get: function(key) {
+				if (strings.hasOwnProperty(key)) {
+					return strings[key];
+				} else {
+					console.error('AuthLanguage: Missing translation for: ' + key);
+					return 'Missing translation';
+				}
+			}
+    };
+  });
+
+}());
 (function() {
 	'use strict';
 
@@ -372,7 +440,7 @@
 (function () {
 	'use strict';
 
-	angular.module('auth', ['ngMessages', 'auth.service', 'auth.controller', 'auth.directives'])
+	angular.module('auth', ['ngMessages', 'auth.service', 'auth.lang', 'auth.controller', 'auth.directives'])
 
 	.constant('loginState', 'auth.login')
 	.constant('welcomeNoAuthState', 'welcome')
@@ -416,9 +484,8 @@
 		.state('auth.redirect', {
 			url: '/redirect',
 			templateUrl: 'app/auth/auth-pre.tpl.html',
-			controller: ['$state', function($state) {
-				$state.go('auth.authenticating');
-			}]
+			controller: 'AuthCheckController',
+			controllerAs: 'authCtrl'
 		})
 		.state('auth.authenticating', {
 			controller: ['auth', '$state', function(auth, $state) {
@@ -672,341 +739,6 @@
 	}]);
 
 }());
-(function () {
-  'use strict';
-
-  angular.module('home.ctrl', ['common.filters', 'letter.list.ctrl', 'snippet.ctrl', 'user'])
-
-  .controller('HomeController', ['letters', 'currentLetter', '$scope', '$filter', '$timeout', 'UserService', '$modal', function(letters, currentLetter, $scope, $filter, $timeout, UserService, $modal) {
-    this.currentLetter = currentLetter;
-    var self = this;
-
-    this.openLetterList = function() {
-      var letterListModal = $modal.open({
-        size: 'sm',
-        templateUrl: 'app/home/letter.list.tpl.html',
-        controller: 'LetterListController',
-        controllerAs: 'letterListCtrl',
-        resolve: {
-          letters: function () {
-            return letters;
-          },
-          currentLetter: function() {
-            return self.currentLetter;
-          }
-        }
-      });
-
-      letterListModal.result
-      .then(function(selectedLetterId) {
-        if (selectedLetterId === true) {
-          // Deleted letter
-          return UserService.setCurrentLetterId(null)
-          .then(function() {
-            return UserService.getCurrentLetter();
-          })
-          .then(function(letter) {
-            self.currentLetter = letter;
-          })
-          .catch(function(error) {
-            console.log('HomeController [openLetterList] could not set current letter: ' + error.code);
-          });
-        } else if (selectedLetterId !== self.currentLetter.$id) {
-          // Changed letter
-          return UserService.setCurrentLetterId(selectedLetterId)
-          .then(function() {
-            return UserService.getCurrentLetter();
-          })
-          .then(function(letter) {
-            self.currentLetter = letter;
-          })
-          .catch(function(error) {
-            console.log('HomeController [openLetterList] could not set current letter: ' + error.code);
-          });
-        }
-      });
-    };
-
-    this.openSnippet = function(id) {
-      $modal.open({
-        templateUrl: 'app/home/snippet.tpl.html',
-        controller: 'SnippetController',
-        controllerAs: 'snippetCtrl',
-        resolve: {
-          currentLetter: function() {
-            return self.currentLetter;
-          },
-          snippetId: function() {
-            return id;
-          }
-        }
-      });
-    };
-
-    this.enableSnippet = function(snippetId, state) {
-      self.currentLetter.enableSnippet(snippetId, state)
-      .catch(function(error) {
-        console.log('HomeController [toggleSnippet] could not set snippet state: ' + error);
-      });
-    };
-
-    this.copyAsMarkdown = function(snippet) {
-      return $filter('tagFill')(snippet, this.values);
-    };
-
-    this.copyAsHTML = function(snippet) {
-      return $filter('ngMarkdown')(this.copyAsMarkdown(snippet));
-    };
-
-    this.copyNotice = false;
-
-    this.copyEnabledAsHTML = function() {
-      var text = '';
-      angular.forEach(self.currentLetter.snippets, function(snippet) {
-        if (snippet.enabled) {
-          text += this.copyAsHTML(snippet);
-        }
-      }, this);
-
-      $timeout(function() {
-        self.copyNotice = true;
-      }, 0);
-
-      $timeout(function() {
-        self.copyNotice = false;
-      }, 1000);
-
-      return text;
-    };
-  }]);
-
-}());
-(function () {
-  'use strict';
-
-  angular.module('home', ['auth.service', 'user', 'home.ctrl'])
-
-  .config(['$urlRouterProvider', '$stateProvider', function($urlRouterProvider, $stateProvider) {
-    $stateProvider
-    .state('home', {
-      abstract: true,
-      url: '/home',
-      template: '<div id="home-content" ui-view></div>',
-      contoller: function($state) {
-        $state.go('home.home');
-      },
-      resolve: {
-        requireAuth: ['requireAuth', function(requireAuth) {
-          return requireAuth();
-        }],
-        letters: ['UserService', function(UserService) {
-          return UserService.getLetters();
-        }]
-      }
-    })
-    .state('home.home', {
-      url: '',
-      templateUrl: 'app/home/home.tpl.html',
-      controller: 'HomeController',
-      controllerAs: 'homeCtrl',
-      resolve: {
-        currentLetter: ['UserService', function(UserService) {
-          return UserService.getCurrentLetter();
-        }]
-      }
-    });
-  }]);
-
-}());
-(function () {
-  'use strict';
-
-  angular.module('letter.edit.ctrl', ['user.service'])
-
-  .controller('LetterEditController', ['editLetter', 'letters', 'UserService', '$modalInstance', function(editLetter, letters, UserService, $modalInstance) {
-    var self = this;
-    this.edit = !!editLetter;
-
-    this.org = {
-      title: ''
-    };
-
-    if (this.edit) {
-      if (editLetter === null) {
-        console.warn('LetterEditController [modal] Letter not available. Letter was %o', editLetter);
-        $modalInstance.close();
-      } else {
-        this.org = editLetter;
-      }
-    }
-
-    this.letter = angular.copy(this.org);
-
-    this.addLetter = function() {
-      letters.$add(this.letter)
-      .then(function(ref) {
-        $modalInstance.close(ref.key());
-      })
-      .catch(function(error) {
-        console.log('LetterEditController [addLetter] failed. Letter was %o and error was ' + error.code, self.letter);
-      });
-    };
-
-    this.saveLetter = function () {
-      editLetter.setTitle(this.letter.title)
-      .then(function() {
-        $modalInstance.close();
-      })
-      .catch(function(error) {
-        console.log('LetterEditController [saveLetter] failed. Letter was %o and error was ' + error.code, self.letter);
-      });
-    };
-
-    this.close = function() {
-      $modalInstance.close();
-    };
-
-    this.cancel = function() {
-      $modalInstance.dismiss();
-    };
-
-    this.delete = function() {
-      var id = editLetter.$id;
-      //letters.$remove(id)
-      UserService.deleteLetter(id)
-      .catch(function(error) {
-        console.warn('LetterEditController [delete] failed. Letter was %o and error was ' + error, self.org);
-      })
-      .then(function() {
-        $modalInstance.close(id);
-      });
-    };
-  }]);
-
-}());
-(function () {
-  'use strict';
-
-  angular.module('letter.list.ctrl', ['letter.edit.ctrl', 'user'])
-
-  .controller('LetterListController', ['letters', 'currentLetter', 'UserService', '$modal', '$modalInstance', function(letters, currentLetter, UserService, $modal, $modalInstance) {
-    this.letters = letters;
-    this.currentLetter = currentLetter;
-
-    this.openLetter = function(id) {
-      var editLetterModal = $modal.open({
-        templateUrl: 'app/home/letter.edit.tpl.html',
-        controller: 'LetterEditController',
-        controllerAs: 'letterEditCtrl',
-        resolve: {
-          editLetter: function() {
-            return UserService.getLetter(id);
-          },
-          letters: function() {
-            return letters;
-          }
-        }
-      });
-
-      editLetterModal.result
-      .then(function(letterId) {
-        if (angular.isUndefined(id)) {
-          // New letter
-          $modalInstance.close(letterId);
-        } else {
-          // Deleted letter
-          if (currentLetter.$id === letterId) {
-            // Deleting current letter
-            $modalInstance.close(true);
-          }
-        }
-      });
-    };
-
-    this.selectLetter = function(id) {
-      $modalInstance.close(id);
-    };
-
-    this.close = function() {
-      $modalInstance.close();
-    };
-
-    this.cancel = function() {
-      $modalInstance.dismiss();
-    };
-  }]);
-
-}());
-(function () {
-  'use strict';
-
-  angular.module('snippet.ctrl', ['ngTagsInput'])
-
-  .controller('SnippetController', ['currentLetter', 'snippetId', '$scope', '$modalInstance', function(currentLetter, snippetId, $scope, $modalInstance) {
-    var self = this;
-    this.edit = angular.isDefined(snippetId);
-
-    this.org = {
-      variables : [],
-      enabled: true
-    };
-
-    if (this.edit) {
-      this.org = currentLetter.snippets[snippetId];
-      if (this.org === null) {
-        console.warn('SnippetController [modal] Snippet not available. ID was ' + snippetId);
-        $modalInstance.close();
-      }
-    }
-
-    this.snippet = angular.copy(this.org);
-    this.snippet.variables = angular.copy(this.org.variables);
-    this.tagsChanged = false;
-
-    this.tagMod = function() {
-      this.tagsChanged = !angular.equals(this.org.variables, this.snippet.variables);
-    };
-
-    this.addSnippet = function () {
-      currentLetter.addSnippet(this.snippet)
-      .then(function() {
-        $modalInstance.close();
-      })
-      .catch(function(error) {
-        console.log('SnippetController [addSnippet] failed. Snippet was %o and error was ' + error.code, self.snippet);
-      });
-    };
-
-    this.saveSnippet = function () {
-      currentLetter.saveSnippet(snippetId, this.snippet)
-      .then(function() {
-        $modalInstance.close();
-      })
-      .catch(function(error) {
-        console.log('SnippetController [saveSnippet] failed. Snippet was %o and error was ' + error.code, self.snippet);
-      });
-    };
-
-    this.close = function() {
-      $modalInstance.close();
-    };
-
-    this.cancel = function() {
-      $modalInstance.dismiss();
-    };
-
-    this.delete = function() {
-      currentLetter.removeSnippet(snippetId)
-      .then(function() {
-        $modalInstance.close();
-      })
-      .catch(function(error) {
-        console.warn('SnippetController [delete] failed. Snippet was %o and error was ' + error.code, self.snippet);
-      });
-    };
-  }]);
-
-}());
 (function() {
   'use strict';
 
@@ -1072,44 +804,6 @@
   angular.module('menu', ['menu.directive', 'menu.controller']);
 
 }());
-(function () {
-  'use strict';
-
-  angular.module('welcome', ['menu'])
-
-  .config(['$stateProvider', function($stateProvider) {
-    $stateProvider
-    .state('welcome', {
-      url: '/welcome',
-      templateUrl: 'app/welcome/welcome.tpl.html',
-      controller: 'WelcomeController',
-      controllerAs: 'welcomeCtrl'
-    });
-  }])
-
-  .controller('WelcomeController', ['$filter', function($filter) {
-
-    this.snippet = {
-      content: 'Hello <b>NAME</b>! I can see that you are working for <b>COMPANY</b> and I thought you might be interested in our service. It makes it possible to use variables in snippets of text. It even supports Markdown and copy to clipboard as HTML.<br /><br /><br/> <b>NAME</b> when did I last tell you that you were awesome?',
-      variables: [{
-        tag: 'NAME',
-        placeholder:'Your name'
-      },{
-        tag: 'COMPANY',
-        placeholder:'Where you work'
-      }]
-    };
-
-    this.copyAsMarkdown = function(snippet) {
-      return $filter('tagFill')(snippet, this.values);
-    };
-
-    this.copyAsHTML = function(snippet) {
-      return $filter('ngMarkdown')(this.copyAsMarkdown(snippet));
-    };
-  }]);
-
-}());
 (function() {
   'use strict';
 
@@ -1146,6 +840,9 @@
       },
 
       addSnippet: function(snippet) {
+        angular.extend(snippet, {
+          '.priority': this.noSnippets()
+        });
         return FirebaseFactory.push('/users/' + AuthService.uid() + '/letters/' + this.$id + '/snippets/', snippet);
       },
 
@@ -1161,6 +858,18 @@
 
       saveSnippet: function(snippetId, snippet) {
         return FirebaseFactory.update('/users/' + AuthService.uid() + '/letters/' + this.$id + '/snippets/' + snippetId, snippet);
+      },
+
+      getSnippets: function() {
+        return FirebaseFactory.getAsArray('/users/' + AuthService.uid() + '/letters/' + this.$id + '/snippets/');
+      },
+
+      noSnippets: function() {
+        if (!this.snippets) {
+          return 0;
+        }
+
+        return Object.keys(this.snippets).length;
       }
     };
 
@@ -1456,6 +1165,431 @@
   'use strict';
 
   angular.module('user', ['user.service']);
+
+}());
+(function () {
+  'use strict';
+
+  angular.module('home.ctrl', ['common.filters', 'letter.list.ctrl', 'snippet.ctrl', 'user', 'dndLists'])
+
+  .controller('HomeController', ['letters', 'currentLetter', '$scope', '$filter', '$timeout', 'UserService', '$modal', function(letters, currentLetter, $scope, $filter, $timeout, UserService, $modal) {
+    var self = this;
+    var updateCurrentLetter = function(letter) {
+      self.currentLetter = letter;
+      self.snippetData = letter.getSnippets();
+      self.snippetData.$loaded(function(data) {
+        var setPriority = false;
+        var i;
+        for (i = 0; i < data.length; i++) {
+          if (data[i].$priority === null) {
+            setPriority = true;
+            break;
+          }
+        }
+
+        if (setPriority) {
+          console.log('Setting priority');
+          for (i = 0; i < data.length; i++) {
+            self.snippetData[i].$priority = i;
+            self.snippetData.$save(i);
+          }
+        }
+      });
+    };
+    updateCurrentLetter(currentLetter);
+
+    this.openLetterList = function() {
+      var letterListModal = $modal.open({
+        size: 'sm',
+        templateUrl: 'app/home/letter.list.tpl.html',
+        controller: 'LetterListController',
+        controllerAs: 'letterListCtrl',
+        resolve: {
+          letters: function () {
+            return letters;
+          },
+          currentLetter: function() {
+            return self.currentLetter;
+          }
+        }
+      });
+
+      letterListModal.result
+      .then(function(selectedLetterId) {
+        if (selectedLetterId === true) {
+          // Deleted letter
+          return UserService.setCurrentLetterId(null)
+          .then(function() {
+            return UserService.getCurrentLetter();
+          })
+          .then(function(letter) {
+            updateCurrentLetter(letter);
+          })
+          .catch(function(error) {
+            console.log('HomeController [openLetterList] could not set current letter: ' + error.code);
+          });
+        } else if (selectedLetterId !== self.currentLetter.$id) {
+          // Changed letter
+          return UserService.setCurrentLetterId(selectedLetterId)
+          .then(function() {
+            return UserService.getCurrentLetter();
+          })
+          .then(function(letter) {
+            updateCurrentLetter(letter);
+          })
+          .catch(function(error) {
+            console.log('HomeController [openLetterList] could not set current letter: ' + error.code);
+          });
+        }
+      });
+    };
+
+    this.openSnippet = function(id) {
+      $modal.open({
+        templateUrl: 'app/home/snippet.tpl.html',
+        controller: 'SnippetController',
+        controllerAs: 'snippetCtrl',
+        resolve: {
+          currentLetter: function() {
+            return self.currentLetter;
+          },
+          snippetId: function() {
+            return id;
+          }
+        }
+      });
+    };
+
+    this.enableSnippet = function(snippetId, state) {
+      self.currentLetter.enableSnippet(snippetId, state)
+      .catch(function(error) {
+        console.log('HomeController [toggleSnippet] could not set snippet state: ' + error);
+      });
+    };
+
+    this.dndSnippet = {
+      splice: function(dropIndex, dummy, object) {
+        var dragIndex = self.snippetData.$indexFor(object.$id);
+
+        if (dragIndex < dropIndex) {
+          // Moving down, compensate as original element isn't removed but modified
+          dropIndex--;
+        }
+
+        self.snippetData[dragIndex].$priority = dropIndex;
+        self.snippetData.$save(dragIndex);
+
+        if (dragIndex > dropIndex) {
+          // Moving up
+          while (self.snippetData[dropIndex] && dropIndex !== dragIndex ){
+            self.snippetData[dropIndex].$priority = dropIndex + 1;
+            self.snippetData.$save(dropIndex);
+            dropIndex++;
+          }
+        } else if (dragIndex < dropIndex) {
+          // Moving down
+          while (self.snippetData[dropIndex] && dropIndex !== dragIndex ){
+            self.snippetData[dropIndex].$priority = dropIndex - 1;
+            self.snippetData.$save(dropIndex);
+            dropIndex--;
+          }
+        }
+      }
+    };
+
+    this.copyAsMarkdown = function(snippet) {
+      return $filter('tagFill')(snippet, this.values);
+    };
+
+    this.copyAsHTML = function(snippet) {
+      return $filter('ngMarkdown')(this.copyAsMarkdown(snippet));
+    };
+
+    this.copyNotice = false;
+
+    this.copyEnabledAsHTML = function() {
+      var text = '';
+      angular.forEach(self.currentLetter.snippets, function(snippet) {
+        if (snippet.enabled) {
+          text += this.copyAsHTML(snippet);
+        }
+      }, this);
+
+      $timeout(function() {
+        self.copyNotice = true;
+      }, 0);
+
+      $timeout(function() {
+        self.copyNotice = false;
+      }, 1000);
+
+      return text;
+    };
+  }]);
+
+}());
+(function () {
+  'use strict';
+
+  angular.module('home', ['auth.service', 'user', 'home.ctrl'])
+
+  .config(['$urlRouterProvider', '$stateProvider', function($urlRouterProvider, $stateProvider) {
+    $stateProvider
+    .state('home', {
+      abstract: true,
+      url: '/home',
+      template: '<div id="home-content" ui-view></div>',
+      contoller: function($state) {
+        $state.go('home.home');
+      },
+      resolve: {
+        requireAuth: ['requireAuth', function(requireAuth) {
+          return requireAuth();
+        }],
+        letters: ['UserService', function(UserService) {
+          return UserService.getLetters();
+        }]
+      }
+    })
+    .state('home.home', {
+      url: '',
+      templateUrl: 'app/home/home.tpl.html',
+      controller: 'HomeController',
+      controllerAs: 'homeCtrl',
+      resolve: {
+        currentLetter: ['UserService', function(UserService) {
+          return UserService.getCurrentLetter();
+        }]
+      }
+    });
+  }]);
+
+}());
+(function () {
+  'use strict';
+
+  angular.module('letter.edit.ctrl', ['user.service'])
+
+  .controller('LetterEditController', ['editLetter', 'letters', 'UserService', '$modalInstance', function(editLetter, letters, UserService, $modalInstance) {
+    var self = this;
+    this.edit = !!editLetter;
+
+    this.org = {
+      title: ''
+    };
+
+    if (this.edit) {
+      if (editLetter === null) {
+        console.warn('LetterEditController [modal] Letter not available. Letter was %o', editLetter);
+        $modalInstance.close();
+      } else {
+        this.org = editLetter;
+      }
+    }
+
+    this.letter = angular.copy(this.org);
+
+    this.addLetter = function() {
+      letters.$add(this.letter)
+      .then(function(ref) {
+        $modalInstance.close(ref.key());
+      })
+      .catch(function(error) {
+        console.log('LetterEditController [addLetter] failed. Letter was %o and error was ' + error.code, self.letter);
+      });
+    };
+
+    this.saveLetter = function () {
+      editLetter.setTitle(this.letter.title)
+      .then(function() {
+        $modalInstance.close();
+      })
+      .catch(function(error) {
+        console.log('LetterEditController [saveLetter] failed. Letter was %o and error was ' + error.code, self.letter);
+      });
+    };
+
+    this.close = function() {
+      $modalInstance.close();
+    };
+
+    this.cancel = function() {
+      $modalInstance.dismiss();
+    };
+
+    this.delete = function() {
+      var id = editLetter.$id;
+      //letters.$remove(id)
+      UserService.deleteLetter(id)
+      .catch(function(error) {
+        console.warn('LetterEditController [delete] failed. Letter was %o and error was ' + error, self.org);
+      })
+      .then(function() {
+        $modalInstance.close(id);
+      });
+    };
+  }]);
+
+}());
+(function () {
+  'use strict';
+
+  angular.module('letter.list.ctrl', ['letter.edit.ctrl', 'user'])
+
+  .controller('LetterListController', ['letters', 'currentLetter', 'UserService', '$modal', '$modalInstance', function(letters, currentLetter, UserService, $modal, $modalInstance) {
+    this.letters = letters;
+    this.currentLetter = currentLetter;
+
+    this.openLetter = function(id) {
+      var editLetterModal = $modal.open({
+        templateUrl: 'app/home/letter.edit.tpl.html',
+        controller: 'LetterEditController',
+        controllerAs: 'letterEditCtrl',
+        resolve: {
+          editLetter: function() {
+            return UserService.getLetter(id);
+          },
+          letters: function() {
+            return letters;
+          }
+        }
+      });
+
+      editLetterModal.result
+      .then(function(letterId) {
+        if (angular.isUndefined(id)) {
+          // New letter
+          $modalInstance.close(letterId);
+        } else {
+          // Deleted letter
+          if (currentLetter.$id === letterId) {
+            // Deleting current letter
+            $modalInstance.close(true);
+          }
+        }
+      });
+    };
+
+    this.selectLetter = function(id) {
+      $modalInstance.close(id);
+    };
+
+    this.close = function() {
+      $modalInstance.close();
+    };
+
+    this.cancel = function() {
+      $modalInstance.dismiss();
+    };
+  }]);
+
+}());
+(function () {
+  'use strict';
+
+  angular.module('snippet.ctrl', ['ngTagsInput'])
+
+  .controller('SnippetController', ['currentLetter', 'snippetId', '$scope', '$modalInstance', function(currentLetter, snippetId, $scope, $modalInstance) {
+    var self = this;
+    this.edit = angular.isDefined(snippetId);
+
+    this.org = {
+      variables : [],
+      enabled: true
+    };
+
+    if (this.edit) {
+      this.org = currentLetter.snippets[snippetId];
+      if (this.org === null) {
+        console.warn('SnippetController [modal] Snippet not available. ID was ' + snippetId);
+        $modalInstance.close();
+      }
+    }
+
+    this.snippet = angular.copy(this.org);
+    this.snippet.variables = angular.copy(this.org.variables);
+    this.tagsChanged = false;
+
+    this.tagMod = function() {
+      this.tagsChanged = !angular.equals(this.org.variables, this.snippet.variables);
+    };
+
+    this.addSnippet = function () {
+      currentLetter.addSnippet(this.snippet)
+      .then(function() {
+        $modalInstance.close();
+      })
+      .catch(function(error) {
+        console.log('SnippetController [addSnippet] failed. Snippet was %o and error was ' + error.code, self.snippet);
+      });
+    };
+
+    this.saveSnippet = function () {
+      currentLetter.saveSnippet(snippetId, this.snippet)
+      .then(function() {
+        $modalInstance.close();
+      })
+      .catch(function(error) {
+        console.log('SnippetController [saveSnippet] failed. Snippet was %o and error was ' + error.code, self.snippet);
+      });
+    };
+
+    this.close = function() {
+      $modalInstance.close();
+    };
+
+    this.cancel = function() {
+      $modalInstance.dismiss();
+    };
+
+    this.delete = function() {
+      currentLetter.removeSnippet(snippetId)
+      .then(function() {
+        $modalInstance.close();
+      })
+      .catch(function(error) {
+        console.warn('SnippetController [delete] failed. Snippet was %o and error was ' + error.code, self.snippet);
+      });
+    };
+  }]);
+
+}());
+(function () {
+  'use strict';
+
+  angular.module('welcome', ['menu'])
+
+  .config(['$stateProvider', function($stateProvider) {
+    $stateProvider
+    .state('welcome', {
+      url: '/welcome',
+      templateUrl: 'app/welcome/welcome.tpl.html',
+      controller: 'WelcomeController',
+      controllerAs: 'welcomeCtrl'
+    });
+  }])
+
+  .controller('WelcomeController', ['$filter', function($filter) {
+
+    this.snippet = {
+      content: 'Hello <b>NAME</b>! I can see that you are working for <b>COMPANY</b> and I thought you might be interested in our service. It makes it possible to use variables in snippets of text. It even supports Markdown and copy to clipboard as HTML.<br /><br /><br/> <b>NAME</b> when did I last tell you that you were awesome?',
+      variables: [{
+        tag: 'NAME',
+        placeholder:'Your name'
+      },{
+        tag: 'COMPANY',
+        placeholder:'Where you work'
+      }]
+    };
+
+    this.copyAsMarkdown = function(snippet) {
+      return $filter('tagFill')(snippet, this.values);
+    };
+
+    this.copyAsHTML = function(snippet) {
+      return $filter('ngMarkdown')(this.copyAsMarkdown(snippet));
+    };
+  }]);
 
 }());
 //# sourceMappingURL=maps/app.js.map
