@@ -30,6 +30,13 @@
   -webkit-animation: fadeOut 300ms;
           animation: fadeOut 300ms;
 }
+.snippetEnablerList li label {
+  width: 80%;
+  margin: 0;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  overflow: hidden;
+}
 .snippetEdit {
   margin-bottom: 15px;
   border-bottom: 1px #eeeeee solid;
