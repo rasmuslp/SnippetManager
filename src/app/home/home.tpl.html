@@ -1,14 +1,19 @@
 <div class="container">
   <div class="row">
     <div class="col-md-2">
-      <button class="btn btn-default btn-block" type="button" ng-click="homeCtrl.openLetterList()"><i class="fa fa-file"></i> Change letter</button>
+      <button class="btn btn-success btn-block" type="button" ng-click="homeCtrl.openLetter()"><i class="fa fa-plus-circle"></i> Letter</button>
     </div>
+
     <div class="col-md-3">
-      <p class="lead" style="margin-bottom: 0;">{{homeCtrl.currentLetter.title}}</p>
+      <div class="btn-group" role="group">
+        <button class="btn btn-default" type="button" ng-click="homeCtrl.openLetterList()"><i class="fa fa-files-o"></i> {{homeCtrl.currentLetter.title}}</button>
+        <button class="btn btn-default" type="button" ng-click="homeCtrl.openLetter(homeCtrl.currentLetter.$id)"><i class="fa fa-pencil"></i></button>
+      </div>
     </div>
+
     <div class="col-md-7">
       <div class="text-center">
-        <button class="btn btn-default" type="button" clip-copy="homeCtrl.copyEnabledAsHTML()" clip-copy-mime-type="text/html"><i class="fa fa-clipboard"></i> Copy to clipboard</button>
+        <button class="btn btn-default pull-right" type="button" clip-copy="homeCtrl.copyEnabledAsHTML()" clip-copy-mime-type="text/html"><i class="fa fa-clipboard"></i> Copy to clipboard</button>
       </div>
     </div>
   </div>

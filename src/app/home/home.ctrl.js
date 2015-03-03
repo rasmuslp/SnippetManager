@@ -29,6 +29,54 @@
     };
     updateCurrentLetter(currentLetter);
 
+    this.openLetter = function(id) {
+      var editLetterModal = $modal.open({
+        templateUrl: 'app/home/letter.edit.tpl.html',
+        controller: 'LetterEditController',
+        controllerAs: 'letterEditCtrl',
+        resolve: {
+          editLetter: function() {
+            return UserService.getLetter(id);
+          },
+          letters: function() {
+            return letters;
+          }
+        }
+      });
+
+      editLetterModal.result
+      .then(function(letterId) {
+        if (angular.isUndefined(id)) {
+          // New letter
+          return UserService.setCurrentLetterId(letterId)
+          .then(function() {
+            return UserService.getCurrentLetter();
+          })
+          .then(function(letter) {
+            updateCurrentLetter(letter);
+          })
+          .catch(function(error) {
+            console.log('HomeController [openLetter] could not change to new letter: ' + error.code);
+          });
+        } else {
+          // Deleted letter
+          if (self.currentLetter.$id === letterId) {
+            // Deleting current letter
+            return UserService.setCurrentLetterId(null)
+            .then(function() {
+              return UserService.getCurrentLetter();
+            })
+            .then(function(letter) {
+              updateCurrentLetter(letter);
+            })
+            .catch(function(error) {
+              console.log('HomeController [openLetter] get new letter after delete: ' + error.code);
+            });
+          }
+        }
+      });
+    };
+
     this.openLetterList = function() {
       var letterListModal = $modal.open({
         size: 'sm',
@@ -47,19 +95,7 @@
 
       letterListModal.result
       .then(function(selectedLetterId) {
-        if (selectedLetterId === true) {
-          // Deleted letter
-          return UserService.setCurrentLetterId(null)
-          .then(function() {
-            return UserService.getCurrentLetter();
-          })
-          .then(function(letter) {
-            updateCurrentLetter(letter);
-          })
-          .catch(function(error) {
-            console.log('HomeController [openLetterList] could not set current letter: ' + error.code);
-          });
-        } else if (selectedLetterId !== self.currentLetter.$id) {
+        if (selectedLetterId !== self.currentLetter.$id) {
           // Changed letter
           return UserService.setCurrentLetterId(selectedLetterId)
           .then(function() {
@@ -69,7 +105,7 @@
             updateCurrentLetter(letter);
           })
           .catch(function(error) {
-            console.log('HomeController [openLetterList] could not set current letter: ' + error.code);
+            console.log('HomeController [openLetterList] could not change letter: ' + error.code);
           });
         }
       });

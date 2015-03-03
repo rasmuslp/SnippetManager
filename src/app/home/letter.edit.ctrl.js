@@ -52,7 +52,6 @@
 
     this.delete = function() {
       var id = editLetter.$id;
-      //letters.$remove(id)
       UserService.deleteLetter(id)
       .catch(function(error) {
         console.warn('LetterEditController [delete] failed. Letter was %o and error was ' + error, self.org);
