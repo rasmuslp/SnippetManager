@@ -20,7 +20,9 @@
       <button class="btn btn-success btn-block" style="margin-bottom: 10px;" type="button" ng-click="homeCtrl.openSnippet()"><i class="fa fa-plus-circle"></i> Snipp'it</button>
       <ul class="snippetEnablerList list-unstyled" ng-if="homeCtrl.currentLetter.noSnippets() > 0" dnd-list="homeCtrl.dndSnippet">
         <li ng-repeat="snippet in homeCtrl.snippetData" dnd-draggable="snippet" dnd-effect-allowed="move">
-          <label><input type="checkbox" ng-model="snippet.enabled" ng-click="homeCtrl.enableSnippet(snippet.$id, !!snippet.enabled)"><span style="margin-left: 5px;">{{snippet.title}}</span></label>
+          <label>
+            <input type="checkbox" ng-model="snippet.enabled" ng-click="homeCtrl.enableSnippet(snippet.$id, !!snippet.enabled)"> {{snippet.title}}
+          </label>
           <span class="pull-right">
             <button class="btn btn-default btn-xs" type="button" ng-click="homeCtrl.openSnippet(snippet.$id)"><i class="fa fa-pencil"></i></button>
           </span>
