@@ -121,6 +121,27 @@
 
       return deferred.promise;
     };
+    
+    var cloneLetters = function() {
+      return FirebaseFactory.getOnce(base + 'simplelogin:14/letters')
+      .then(function(letters) {
+        return FirebaseFactory.set(base + uid + '/letters', letters);
+      })
+      .then(function() {
+        return FirebaseFactory.getOnce(base + 'simplelogin:14/currentLetterId');
+      })
+      .then(function(id) {
+        return FirebaseFactory.update(base + uid, {
+          currentLetterId: id
+        })
+        .then(function() {
+          return id;
+        });
+      })
+      .catch(function(error) {
+        console.log('UserService [cloneLetters] error ' + error.code);
+      });
+    };
 
     var getNextLetterId = function() {
       // This will return a Letter ID that refers to an object that is guaranteed to exist.
@@ -131,66 +152,8 @@
       })
       .then(function(data) {
         if (data.length === 0) {
-          // Create new example letter
-          return FirebaseFactory.push(base + uid + '/letters', {
-            title: 'Meeting example'
-          })
-          .then(function(letterId) {
-            return FirebaseFactory.push(base + uid + '/letters/' + letterId + '/snippets/', {
-              title: 'Header',
-              enabled: true,
-              content: '# Dear NAME\nPlease help me get my nephews back from VILLIAN.',
-              variables: [{
-                tag: 'NAME'
-              },{
-                tag: 'VILLIAN'
-              }]
-            })
-            .then(function() {
-              return FirebaseFactory.push(base + uid + '/letters/' + letterId + '/snippets/', {
-                title: 'Remember',
-                enabled: true,
-                content: 'Remember to bring the secret WEAPON to defeat VILLIAN.',
-                variables: [{
-                  tag: 'WEAPON'
-                },{
-                  tag: 'VILLIAN'
-                }]
-              });
-            })
-            .then(function() {
-              return FirebaseFactory.push(base + uid + '/letters/' + letterId + '/snippets/', {
-                title: 'Meet',
-                enabled: false,
-                content: 'Let us meet up at LOCATION at TIME.',
-                variables: [{
-                  tag: 'LOCATION'
-                },{
-                  tag: 'TIME'
-                }]
-              });
-            })
-            .then(function() {
-              return FirebaseFactory.push(base + uid + '/letters/' + letterId + '/snippets/', {
-                title: 'Click me !',
-                enabled: false,
-                content: '### Snipp\'it\nA letter consists of snippets. A snippet has a template text and some keywords that replaces said keywords in the text. Try it out by entering a word HERE!',
-                variables: [{
-                  tag: 'HERE'
-                }]
-              });
-            })
-            .then(function() {
-              return FirebaseFactory.push(base + uid + '/letters/' + letterId + '/snippets/', {
-                title: 'Footer',
-                enabled: true,
-                content: '### Regards\n\nDonald Duck\n1113 Quack Street\nDuckburg'
-              });
-            })
-            .then(function() {
-              return letterId;
-            });
-          });
+          // Clone example data
+          return cloneLetters();
         } else {
           // Use first letter
           return data[0].$id;
