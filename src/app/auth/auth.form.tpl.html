@@ -32,6 +32,8 @@
       </div>
       <div ng-if="authCtrl.error.code === 'INVALID_PASSWORD'">
         {{authCtrl.lang.get('passwordInvalid')}}
+        <br>
+        <button class="btn btn-default btn-block btn-sm" ng-click="authCtrl.resetPassword()" ng-disabled="authCtrl.reset === authCtrl.lang.get('passwordResetSuccess')">{{authCtrl.reset}}</button>
       </div>
     </div>
   </div>
