@@ -17,6 +17,7 @@
 			newPass2: 'Confirm new password',
 			working: 'Working',
 			cancel: 'Cancel',
+			success: 'Password changed',
 
 			passwordReq: 'Enter a password',
 			passwordMin: 'The password must be at least 8 characters',
