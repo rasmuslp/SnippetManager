@@ -10,7 +10,7 @@
 			'Login': 'Login',
 			'signup': 'sign up',
 			'Signup': 'Sign up',
-			'Cancel': 'cancel',
+			'Cancel': 'Cancel',
 
 			// Other
       'check': 'Checking authentication',
