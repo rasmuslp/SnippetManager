@@ -82,6 +82,13 @@
 				});
 			},
 
+			delete: function(email, password) {
+				return fbAuth.$removeUser({
+					email: email,
+					password: password
+				});
+			},
+
 			watch: function(cb, $scope) {
 				ret.getAuth().then(function(authData) {
 					cb(authData);

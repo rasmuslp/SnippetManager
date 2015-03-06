@@ -2,7 +2,7 @@
   <div class="form-group">
     <div class="input-group">
       <span class="input-group-addon"><i class="fa fa-envelope-o fa-fw"></i></span>
-      <input class="form-control" ng-disabled="authCtrl.working" name="email" type="email" placeholder="{{authCtrl.lang.get('emailPlaceholder')}}" ng-model="authCtrl.user.email">
+      <input class="form-control" ng-disabled="authCtrl.working" name="email" type="email" placeholder="{{authCtrl.lang.get('emailPlaceholder')}}" ng-model="authCtrl.user.email" required>
     </div>
     <div class="form-sub text-center text-danger">
       <div ng-messages="authForm.email.$error" ng-if="authForm.$submitted || authForm.email.$touched">

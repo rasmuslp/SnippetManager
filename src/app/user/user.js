@@ -24,6 +24,12 @@
       controller: 'UserController',
       controllerAs: 'userCtrl'
     })
+    .state('user.delete', {
+      url: '/delete',
+      templateUrl: 'app/user/user.delete.tpl.html',
+      controller: 'UserDeleteController',
+      controllerAs: 'udCtrl'
+    })
     .state('user.password', {
       url: '/password',
       templateUrl: 'app/user/user.password.tpl.html',
