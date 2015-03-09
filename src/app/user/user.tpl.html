@@ -1,0 +1,28 @@
+<div class="container">
+
+  <div class="row">
+    <div class="col-xs-12">
+      <div class="page-header text-center">
+        <h1>
+          {{userCtrl.lang.get('title')}}
+          <br>
+          <small>{{userCtrl.lang.get('subtitle')}}</small>
+        </h1>
+      </div>
+    </div>
+  </div>
+
+  <div class="row">
+    <div class="col-xs-2">
+    </div>
+    <div class="col-xs-10">
+      <p ng-if="userCtrl.provider === 'password'">
+        <a ui-sref="user.password">{{userCtrl.lang.get('change')}}</a>
+      </p>
+      <p>
+        <a ui-sref="user.delete">{{userCtrl.lang.get('delete')}}</a>
+      </p>
+    </div>
+  </div>
+
+</div>

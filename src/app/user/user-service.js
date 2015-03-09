@@ -121,7 +121,7 @@
 
       return deferred.promise;
     };
-    
+
     var cloneLetters = function() {
       return FirebaseFactory.getOnce(base + 'simplelogin:14/letters')
       .then(function(letters) {
@@ -168,6 +168,13 @@
     };
 
     var service = {
+      delete: function() {
+        return load()
+        .then(function() {
+          return FirebaseFactory.delete(base + uid);
+        });
+      },
+
       getData: function() {
         return load()
         .then(function() {

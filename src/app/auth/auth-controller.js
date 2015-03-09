@@ -44,6 +44,7 @@
 
 		this.working = false;
 		this.error = {};
+		this.reset = AuthLanguage.get('passwordReset');
 
 		var self = this;
 
@@ -107,6 +108,17 @@
 					self.working = false;
 				});
 			}
+		};
+
+		this.resetPassword = function() {
+			AuthService.resetPassword(this.user.email)
+			.then(function() {
+				self.reset = AuthLanguage.get('passwordResetSuccess');
+			})
+			.catch(function(error) {
+				self.reset = AuthLanguage.get('passwordResetFailed');
+				console.log('AuthController [resetPassword] failed with error code ' + error.code);
+			});
 		};
 
 		this.login3rdParty = function(provider) {

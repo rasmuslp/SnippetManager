@@ -2,9 +2,9 @@
   <div class="form-group">
     <div class="input-group">
       <span class="input-group-addon"><i class="fa fa-envelope-o fa-fw"></i></span>
-      <input class="form-control" ng-disabled="authCtrl.working" name="email" type="email" placeholder="{{authCtrl.lang.get('emailPlaceholder')}}" ng-model="authCtrl.user.email">
+      <input class="form-control" ng-disabled="authCtrl.working" name="email" type="email" placeholder="{{authCtrl.lang.get('emailPlaceholder')}}" ng-model="authCtrl.user.email" required>
     </div>
-    <div class="form-sub text-danger">
+    <div class="form-sub text-center text-danger">
       <div ng-messages="authForm.email.$error" ng-if="authForm.$submitted || authForm.email.$touched">
         <div ng-message="required">{{authCtrl.lang.get('emailReq')}}</div>
         <div ng-message="email">{{authCtrl.lang.get('emailLike')}}</div>
@@ -25,13 +25,15 @@
       <span class="input-group-addon"><i class="fa fa-key fa-fw"></i></span>
       <input class="form-control" ng-disabled="authCtrl.working" name="password" type="password" placeholder="{{authCtrl.lang.get('passwordPlaceholder')}}" ng-model="authCtrl.user.password" required minlength="8">
     </div>
-    <div class="form-sub text-danger">
+    <div class="form-sub text-center text-danger">
       <div ng-messages="authForm.password.$error" ng-if="authForm.$submitted || authForm.password.$touched">
         <div ng-message="required">{{authCtrl.lang.get('passwordReq')}}</div>
         <div ng-message="minlength">{{authCtrl.lang.get('passwordMin')}}</div>
       </div>
       <div ng-if="authCtrl.error.code === 'INVALID_PASSWORD'">
         {{authCtrl.lang.get('passwordInvalid')}}
+        <br>
+        <button class="btn btn-default btn-block btn-sm" ng-click="authCtrl.resetPassword()" ng-disabled="authCtrl.reset === authCtrl.lang.get('passwordResetSuccess')">{{authCtrl.reset}}</button>
       </div>
     </div>
   </div>
@@ -40,7 +42,7 @@
       <span class="input-group-addon"><i class="fa fa-key fa-fw"></i></span>
       <input class="form-control" ng-disabled="authCtrl.working" name="passwordConfirm" type="password" placeholder="{{authCtrl.lang.get('passwordConfirmPlaceholder')}}" ng-model="authCtrl.user.passwordConfirm" required minlength="8" compare-to-validator="authCtrl.user.password">
     </div>
-    <div class="form-sub text-danger">
+    <div class="form-sub text-center text-danger">
       <div ng-messages="authForm.passwordConfirm.$error" ng-if="authForm.$submitted || authForm.passwordConfirm.$touched">
         <div ng-message="required">{{authCtrl.lang.get('passwordRepeat')}}</div>
         <div ng-message="compareTo">{{authCtrl.lang.get('passwordMatch')}}</div>
@@ -72,7 +74,7 @@
       <li><a ng-click="authCtrl.login3rdParty('twitter')"><i class="fa fa-3x fa-twitter"></i></a></li>
     </ul>
   </div>
-  <div class="form-sub text-danger">
+  <div class="form-sub text-center text-danger">
     <div ng-if="authCtrl.error.code === 'PROVIDER_ERROR'">
       {{authCtrl.lang.get('providerError')}} {{authCtrl.error.provider}}
     </div>

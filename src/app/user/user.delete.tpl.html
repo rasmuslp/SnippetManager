@@ -1,0 +1,84 @@
+<div class="container">
+
+  <div class="row">
+    <div class="col-xs-12">
+      <div class="page-header text-center">
+        <h1>
+          {{udCtrl.lang.get('title')}}
+          <br>
+          <small>{{udCtrl.lang.get('delete')}}</small>
+        </h1>
+      </div>
+    </div>
+  </div>
+
+  <div class="row">
+    <div class="col-xs-12 col-sm-offset-1 col-sm-10 col-md-offset-2 col-md-8 col-lg-offset-3 col-lg-6">
+      <p class="text-center" ng-if="udCtrl.provider === 'password'">
+        {{udCtrl.lang.get('deletePrecaution')}}
+      </p>
+      <form class="form-horizontal" id="change-password-form" name="udForm" ng-submit="udCtrl.submit(udForm.$valid)" novalidate>
+
+        <div class="form-group" ng-if="udCtrl.provider === 'password'">
+          <label for="email" class="col-sm-3 control-label">{{udCtrl.lang.get('email')}}</label>
+          <div class="col-sm-9">
+            <input class="form-control" ng-disabled="udCtrl.working" id="email" name="email" type="email" ng-model="udCtrl.user.email" required compare-to-validator="udCtrl.email">
+            <div class="form-sub text-danger">
+              <div ng-messages="udForm.email.$error" ng-if="udForm.$submitted || udForm.email.$touched">
+                <div ng-message="required">{{udCtrl.lang.get('emailReq')}}</div>
+                <div ng-message="email">{{udCtrl.lang.get('emailLike')}}</div>
+                <div ng-message="compareTo">{{udCtrl.lang.get('emailMatch')}}</div>
+              </div>
+              <div ng-if="udCtrl.error.code === 'INVALID_EMAIL'">
+                {{udCtrl.lang.get('emailInvalid')}}
+              </div>
+              <div ng-if="udCtrl.error.code === 'INVALID_USER'">
+                {{udCtrl.lang.get('userInvalid')}}
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="form-group" ng-if="udCtrl.provider === 'password'">
+          <label for="pass" class="col-sm-3 control-label">{{udCtrl.lang.get('pass')}}</label>
+          <div class="col-sm-9">
+            <input class="form-control" ng-disabled="udCtrl.working" id="pass" name="pass" type="password" ng-model="udCtrl.user.pass" required minlength="8">
+            <div class="form-sub text-danger">
+              <div ng-messages="udForm.pass.$error" ng-if="udForm.$submitted || udForm.pass.$touched">
+                <div ng-message="required">{{udCtrl.lang.get('passwordReq')}}</div>
+                <div ng-message="minlength">{{udCtrl.lang.get('passwordMin')}}</div>
+              </div>
+              <div ng-if="udCtrl.error.code === 'INVALID_PASSWORD'">
+                {{udCtrl.lang.get('passwordInvalid')}}
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <div class="col-sm-3">
+            <button class="btn btn-lg btn-default" ng-disabled="udCtrl.working" type="button" ui-sref="user.user">{{udCtrl.lang.get('cancel')}}</button>
+          </div>
+          <div class="col-sm-9">
+            <button class="btn btn-lg btn-danger btn-block" ng-class="{'btn-success': udCtrl.success}" ng-disabled="udCtrl.working" type="submit">
+              <span ng-if="udCtrl.working"><i class="fa fa-circle-o-notch fa-spin"></i> {{udCtrl.lang.get('working')}}...</span>
+              <span ng-if="!udCtrl.working && !udCtrl.success"><i class="fa fa-exclamation-triangle"></i> {{udCtrl.lang.get('delete')}}</span>
+              <span ng-if="!udCtrl.working && udCtrl.success">{{udCtrl.lang.get('deleteSuccess')}}</span>
+            </button>
+            <div ng-if="udCtrl.error.code === 'NETWORK_ERROR'" class="form-sub text-center text-danger">
+              {{udCtrl.lang.get('networkError')}}
+            </div>
+            <div ng-if="udCtrl.error.code === 'GENERAL_ERROR'" class="form-sub text-center text-danger">
+              {{udCtrl.lang.get('generalError')}}
+            </div>
+          </div>
+        </div>
+
+      </form>
+      <p class="text-center">
+        {{udCtrl.lang.get('deleteAfter')}}
+      </p>
+    </div>
+  </div>
+
+</div>

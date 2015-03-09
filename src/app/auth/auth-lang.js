@@ -10,7 +10,7 @@
 			'Login': 'Login',
 			'signup': 'sign up',
 			'Signup': 'Sign up',
-			'Cancel': 'cancel',
+			'Cancel': 'Cancel',
 
 			// Other
       'check': 'Checking authentication',
@@ -30,6 +30,9 @@
 			'passwordReq': 'Enter a password',
 			'passwordMin': 'The password must be at least 8 characters',
 			'passwordInvalid': 'Invalid password',
+			'passwordReset': 'Click here to reset password',
+			'passwordResetSuccess': 'Check your email for a temporary password',
+			'passwordResetFailed': 'Failed to send email, try again',
 			'passwordConfirmPlaceholder': 'Confirm password',
 			'passwordRepeat': 'Repeat the password',
 			'passwordMatch': 'The passwords does not match',
