@@ -14,12 +14,12 @@
 
   <div class="row">
     <div class="col-xs-12 col-sm-offset-1 col-sm-10 col-md-offset-2 col-md-8 col-lg-offset-3 col-lg-6">
-      <p class="text-center">
+      <p class="text-center" ng-if="udCtrl.provider === 'password'">
         {{udCtrl.lang.get('deletePrecaution')}}
       </p>
       <form class="form-horizontal" id="change-password-form" name="udForm" ng-submit="udCtrl.submit(udForm.$valid)" novalidate>
 
-        <div class="form-group">
+        <div class="form-group" ng-if="udCtrl.provider === 'password'">
           <label for="email" class="col-sm-3 control-label">{{udCtrl.lang.get('email')}}</label>
           <div class="col-sm-9">
             <input class="form-control" ng-disabled="udCtrl.working" id="email" name="email" type="email" ng-model="udCtrl.user.email" required compare-to-validator="udCtrl.email">
@@ -39,7 +39,7 @@
           </div>
         </div>
 
-        <div class="form-group">
+        <div class="form-group" ng-if="udCtrl.provider === 'password'">
           <label for="pass" class="col-sm-3 control-label">{{udCtrl.lang.get('pass')}}</label>
           <div class="col-sm-9">
             <input class="form-control" ng-disabled="udCtrl.working" id="pass" name="pass" type="password" ng-model="udCtrl.user.pass" required minlength="8">

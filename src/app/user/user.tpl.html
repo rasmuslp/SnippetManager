@@ -16,7 +16,7 @@
     <div class="col-xs-2">
     </div>
     <div class="col-xs-10">
-      <p>
+      <p ng-if="userCtrl.provider === 'password'">
         <a ui-sref="user.password">{{userCtrl.lang.get('change')}}</a>
       </p>
       <p>

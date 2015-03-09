@@ -3,14 +3,18 @@
 
 	angular.module('user.controller', ['user.service', 'user.lang', 'auth.directives', 'auth.service'])
 
-	.controller('UserController', function(UserLanguage) {
+	.controller('UserController', function(UserLanguage, AuthService) {
 		this.lang = UserLanguage;
+		this.provider = AuthService.provider;
 	})
 
 	.controller('UserDeleteController', function($scope, $timeout, UserService, UserLanguage, AuthService) {
 		this.lang = UserLanguage;
 
-		this.email = AuthService.auth.password.email;
+		this.provider = AuthService.provider;
+		if (this.provider === 'password') {
+			this.email = AuthService.auth.password.email;
+		}
 
 		this.user = {
 			email: '',
@@ -62,7 +66,9 @@
 
 			UserService.delete()
 			.then(function() {
-				return AuthService.delete(AuthService.auth.password.email, self.user.pass);
+				if (self.provider === 'password') {
+					return AuthService.delete(AuthService.auth.password.email, self.user.pass);
+				}
 			})
 			.then(function() {
 				// Clear form
@@ -78,6 +84,9 @@
 				$scope.$on('$destroy', function() {
 					$timeout.cancel(successTimer);
 				});
+			})
+			.then(function() {
+				$timeout(AuthService.logout(), 2000);
 			})
 			.catch(function(error) {
 				errorHandler(error);
