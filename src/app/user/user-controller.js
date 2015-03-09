@@ -73,17 +73,7 @@
 			.then(function() {
 				// Clear form
 				self.user = {};
-				$scope.udForm.$setUntouched();
-				$scope.udForm.$setPristine();
-
 				self.success = true;
-				var successTimer = $timeout(function() {
-					self.success = false;
-				}, 5000);
-
-				$scope.$on('$destroy', function() {
-					$timeout.cancel(successTimer);
-				});
 			})
 			.then(function() {
 				$timeout(AuthService.logout(), 2000);
