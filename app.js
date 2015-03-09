@@ -47,197 +47,6 @@
 
 }());
 (function () {
-	/* jshint -W121 */
-
-	'use strict';
-
-	angular.module('common', ['common.config', 'common.firebase.factory', 'common.filters']);
-	String.prototype.capitalize = function() {
-    return this.charAt(0).toUpperCase() + this.slice(1);
-	};
-
-}());
-(function () {
-	'use strict';
-
-	angular.module('common.config', [])
-	.constant('FB', 'https://snippetmanager.firebaseio.com/');
-
-}());
-(function () {
-  'use strict';
-
-
-  angular.module('common.filters', [])
-
-  .filter('tagFill', function () {
-    return function(snippet, values) {
-      var text = snippet.content;
-      var newText = text;
-      for (var variableIndex in snippet.variables) {
-        if (snippet.variables.hasOwnProperty(variableIndex)) {
-
-          var variable = snippet.variables[variableIndex];
-          if (values.hasOwnProperty(variable.tag) && values[variable.tag].length > 0) {
-            newText = newText.replace(new RegExp(variable.tag, 'g'), values[variable.tag]);
-          } else if (variable.placeholder && variable.placeholder.length > 0) {
-            newText = newText.replace(new RegExp(variable.tag, 'g'), '(' + variable.placeholder + ')');
-          }
-        }
-      }
-
-      return newText;
-    };
-  })
-
-  .filter('html', ['$sce', function($sce) {
-    return function(val) {
-      return $sce.trustAsHtml(val);
-    };
-  }]);
-
-}());
-(function() {
-	'use strict';
-
-	angular.module('common.firebase.factory', ['firebase'])
-
-	.factory('FirebaseFactory', ['FB', '$q', '$firebase', function(FB, $q, $firebase) {
-		var baseRef = new Firebase(FB);
-
-		var ret = {
-			delete: function(path) {
-				var deferred = $q.defer();
-
-				var ref = baseRef.child(path);
-				ref.set({}, function(error) {
-					if (error) {
-						console.warn('FirebaseFactory [delete] of ' + path + ' failed: %o', error);
-						deferred.reject('FirebaseFactory [delete] of ' + path + ' failed with error code ' + error.code);
-					} else {
-						deferred.resolve();
-					}
-				});
-
-				return deferred.promise;
-			},
-
-			getOnce: function(path) {
-				var deferred = $q.defer();
-
-				var ref = baseRef.child(path);
-				ref.once('value', function(data) {
-					deferred.resolve(data.val());
-				}, function(error) {
-					console.warn('FirebaseFactory [getOnce] of ' + path + ' failed: %o', error);
-					deferred.reject('FirebaseFactory [getOnce] of ' + path + ' failed with error code ' + error.code);
-				});
-
-				return deferred.promise;
-			},
-
-			getAsArray: function(path, config) {
-				var ref = baseRef.child(path);
-
-				return $firebase(ref, config).$asArray();
-			},
-
-			getAsObject: function(path, config) {
-				var ref = baseRef.child(path);
-
-				return $firebase(ref, config).$asObject();
-			},
-
-			set: function(path, object) {
-				var deferred = $q.defer();
-
-				var ref = baseRef.child(path);
-				ref.set(object, function(error) {
-					if (error) {
-						console.warn('FirebaseFactory [set] of ' + path + ' failed: %o', error);
-						deferred.reject('FirebaseFactory [set] of ' + path + ' failed with error code ' + error.code);
-					} else {
-						deferred.resolve();
-					}
-				});
-
-				return deferred.promise;
-			},
-
-			update: function(path, object) {
-				var deferred = $q.defer();
-
-				var sync = $firebase(baseRef.child(path));
-				sync.$update(object)
-				.then(function(ref) {
-					deferred.resolve(ref.key());
-				}, function(error) {
-					console.warn('FirebaseFactory [update] of %o to ' + path + ' failed: %o', object, error);
-					deferred.reject('FirebaseFactory [update] of %o to ' + path + ' failed with error code ' + error.code, object);
-				});
-
-				return deferred.promise;
-			},
-
-			push: function(path, object) {
-				var deferred = $q.defer();
-
-				var sync = $firebase(baseRef.child(path));
-				sync.$push(object)
-				.then(function(ref) {
-					deferred.resolve(ref.key());
-				}, function(error) {
-					console.warn('FirebaseFactory [push] of %o to ' + path + ' failed: %o', object, error);
-					deferred.reject('FirebaseFactory [push] of %o to ' + path + ' failed with error code ' + error.code, object);
-				});
-
-				return deferred.promise;
-			}
-		};
-
-		return ret;
-	}])
-
-	.factory('ObjectCache', ['$firebase', function ($firebase) {
-		return function (ref) {
-			var cached = {};
-
-			// Fills cache with
-			cached.$init = function() {
-				ref.on('child_added', function(snapshot) {
-					cached.$load(snapshot.key());
-				});
-			};
-
-			// Load object into cache
-			cached.$load = function (id) {
-				if( !cached.hasOwnProperty(id) ) {
-					cached[id] = $firebase(ref.child(id)).$asObject();
-				}
-
-				return cached[id];
-			};
-
-			// Frees memory and stops listening on objects.
-			// Use this when you switch views in your SPA and no longer need this list.
-			cached.$dispose = function () {
-				angular.forEach(cached, function (object) {
-					object.$destroy();
-				});
-			};
-
-			// Removes an object, both form cache and on Firebase
-			cached.$remove = function(id) {
-				delete cached[id];
-				ref.child(id).remove();
-			};
-
-			return cached;
-		};
-	}]);
-
-}());
-(function () {
 	'use strict';
 
 	angular.module('auth.controller', ['auth.service', 'auth.lang'])
@@ -283,6 +92,7 @@
 
 		this.working = false;
 		this.error = {};
+		this.reset = AuthLanguage.get('passwordReset');
 
 		var self = this;
 
@@ -346,6 +156,17 @@
 					self.working = false;
 				});
 			}
+		};
+
+		this.resetPassword = function() {
+			AuthService.resetPassword(this.user.email)
+			.then(function() {
+				self.reset = AuthLanguage.get('passwordResetSuccess');
+			})
+			.catch(function(error) {
+				self.reset = AuthLanguage.get('passwordResetFailed');
+				console.log('AuthController [resetPassword] failed with error code ' + error.code);
+			});
 		};
 
 		this.login3rdParty = function(provider) {
@@ -458,7 +279,7 @@
 			'Login': 'Login',
 			'signup': 'sign up',
 			'Signup': 'Sign up',
-			'Cancel': 'cancel',
+			'Cancel': 'Cancel',
 
 			// Other
       'check': 'Checking authentication',
@@ -478,6 +299,9 @@
 			'passwordReq': 'Enter a password',
 			'passwordMin': 'The password must be at least 8 characters',
 			'passwordInvalid': 'Invalid password',
+			'passwordReset': 'Click here to reset password',
+			'passwordResetSuccess': 'Check your email for a temporary password',
+			'passwordResetFailed': 'Failed to send email, try again',
 			'passwordConfirmPlaceholder': 'Confirm password',
 			'passwordRepeat': 'Repeat the password',
 			'passwordMatch': 'The passwords does not match',
@@ -588,6 +412,13 @@
 			resetPassword: function(email) {
 				return fbAuth.$resetPassword({
 					email: email
+				});
+			},
+
+			delete: function(email, password) {
+				return fbAuth.$removeUser({
+					email: email,
+					password: password
 				});
 			},
 
@@ -1131,6 +962,262 @@
   }]);
 
 }());
+(function () {
+	/* jshint -W121 */
+
+	'use strict';
+
+	angular.module('common', ['common.config', 'common.firebase.factory', 'common.filters']);
+	String.prototype.capitalize = function() {
+    return this.charAt(0).toUpperCase() + this.slice(1);
+	};
+
+}());
+(function () {
+	'use strict';
+
+	angular.module('common.config', [])
+	.constant('FB', 'https://snippetmanager.firebaseio.com/');
+
+}());
+(function () {
+  'use strict';
+
+
+  angular.module('common.filters', [])
+
+  .filter('tagFill', function () {
+    return function(snippet, values) {
+      var text = snippet.content;
+      var newText = text;
+      for (var variableIndex in snippet.variables) {
+        if (snippet.variables.hasOwnProperty(variableIndex)) {
+
+          var variable = snippet.variables[variableIndex];
+          if (values.hasOwnProperty(variable.tag) && values[variable.tag].length > 0) {
+            newText = newText.replace(new RegExp(variable.tag, 'g'), values[variable.tag]);
+          } else if (variable.placeholder && variable.placeholder.length > 0) {
+            newText = newText.replace(new RegExp(variable.tag, 'g'), '(' + variable.placeholder + ')');
+          }
+        }
+      }
+
+      return newText;
+    };
+  })
+
+  .filter('html', ['$sce', function($sce) {
+    return function(val) {
+      return $sce.trustAsHtml(val);
+    };
+  }]);
+
+}());
+(function() {
+	'use strict';
+
+	angular.module('common.firebase.factory', ['firebase'])
+
+	.factory('FirebaseFactory', ['FB', '$q', '$firebase', function(FB, $q, $firebase) {
+		var baseRef = new Firebase(FB);
+
+		var ret = {
+			delete: function(path) {
+				var deferred = $q.defer();
+
+				var ref = baseRef.child(path);
+				ref.set({}, function(error) {
+					if (error) {
+						console.warn('FirebaseFactory [delete] of ' + path + ' failed: %o', error);
+						deferred.reject('FirebaseFactory [delete] of ' + path + ' failed with error code ' + error.code);
+					} else {
+						deferred.resolve();
+					}
+				});
+
+				return deferred.promise;
+			},
+
+			getOnce: function(path) {
+				var deferred = $q.defer();
+
+				var ref = baseRef.child(path);
+				ref.once('value', function(data) {
+					deferred.resolve(data.val());
+				}, function(error) {
+					console.warn('FirebaseFactory [getOnce] of ' + path + ' failed: %o', error);
+					deferred.reject('FirebaseFactory [getOnce] of ' + path + ' failed with error code ' + error.code);
+				});
+
+				return deferred.promise;
+			},
+
+			getAsArray: function(path, config) {
+				var ref = baseRef.child(path);
+
+				return $firebase(ref, config).$asArray();
+			},
+
+			getAsObject: function(path, config) {
+				var ref = baseRef.child(path);
+
+				return $firebase(ref, config).$asObject();
+			},
+
+			set: function(path, object) {
+				var deferred = $q.defer();
+
+				var ref = baseRef.child(path);
+				ref.set(object, function(error) {
+					if (error) {
+						console.warn('FirebaseFactory [set] of ' + path + ' failed: %o', error);
+						deferred.reject('FirebaseFactory [set] of ' + path + ' failed with error code ' + error.code);
+					} else {
+						deferred.resolve();
+					}
+				});
+
+				return deferred.promise;
+			},
+
+			update: function(path, object) {
+				var deferred = $q.defer();
+
+				var sync = $firebase(baseRef.child(path));
+				sync.$update(object)
+				.then(function(ref) {
+					deferred.resolve(ref.key());
+				}, function(error) {
+					console.warn('FirebaseFactory [update] of %o to ' + path + ' failed: %o', object, error);
+					deferred.reject('FirebaseFactory [update] of %o to ' + path + ' failed with error code ' + error.code, object);
+				});
+
+				return deferred.promise;
+			},
+
+			push: function(path, object) {
+				var deferred = $q.defer();
+
+				var sync = $firebase(baseRef.child(path));
+				sync.$push(object)
+				.then(function(ref) {
+					deferred.resolve(ref.key());
+				}, function(error) {
+					console.warn('FirebaseFactory [push] of %o to ' + path + ' failed: %o', object, error);
+					deferred.reject('FirebaseFactory [push] of %o to ' + path + ' failed with error code ' + error.code, object);
+				});
+
+				return deferred.promise;
+			}
+		};
+
+		return ret;
+	}])
+
+	.factory('ObjectCache', ['$firebase', function ($firebase) {
+		return function (ref) {
+			var cached = {};
+
+			// Fills cache with
+			cached.$init = function() {
+				ref.on('child_added', function(snapshot) {
+					cached.$load(snapshot.key());
+				});
+			};
+
+			// Load object into cache
+			cached.$load = function (id) {
+				if( !cached.hasOwnProperty(id) ) {
+					cached[id] = $firebase(ref.child(id)).$asObject();
+				}
+
+				return cached[id];
+			};
+
+			// Frees memory and stops listening on objects.
+			// Use this when you switch views in your SPA and no longer need this list.
+			cached.$dispose = function () {
+				angular.forEach(cached, function (object) {
+					object.$destroy();
+				});
+			};
+
+			// Removes an object, both form cache and on Firebase
+			cached.$remove = function(id) {
+				delete cached[id];
+				ref.child(id).remove();
+			};
+
+			return cached;
+		};
+	}]);
+
+}());
+(function() {
+  'use strict';
+
+  angular.module('menu.controller', ['common', 'auth'])
+  .controller('MenuController', ['$state', '$modal', 'AuthService', 'loginState', function ($state, $modal, AuthService, loginState) {
+    this.name = '';
+
+    var self = this;
+    AuthService.watch(function(authData) {
+      if (authData) {
+        if (authData.provider === 'password') {
+          self.name = authData.password.email;
+        } else if (authData.provider === 'facebook' || authData.provider === 'twitter' || authData.provider === 'google') {
+          self.name = authData[authData.provider].displayName;
+        } else {
+          self.name = '';
+        }
+      } else {
+        self.name = '';
+      }
+    });
+
+    this.openAuth = function() {
+      if ($state.current.name !== loginState) {
+        $modal.open({
+          size: 'sm',
+          templateUrl: 'app/auth/auth.modal.tpl.html',
+          controller: 'AuthController',
+          controllerAs: 'authCtrl',
+          resolve: {
+            'auth': ['AuthService', function(AuthService) {
+              return AuthService.getAuth();
+            }],
+            'signup': function() {
+              return false;
+            }
+          }
+        });
+      }
+    };
+
+  }]);
+
+}());
+(function () {
+  'use strict';
+
+  angular.module('menu.directive', ['menu.controller'])
+  .directive('siteMenu', function() {
+    return {
+      restrict: 'E',
+      scope: true,
+      templateUrl: 'app/menu/menu.tpl.html',
+      controller: 'MenuController',
+      controllerAs: 'menuCtrl'
+    };
+  });
+
+}());
+(function () {
+  'use strict';
+
+  angular.module('menu', ['menu.directive', 'menu.controller']);
+
+}());
 (function() {
   'use strict';
 
@@ -1202,6 +1289,225 @@
 
     return Letter;
   }]);
+
+}());
+(function () {
+	'use strict';
+
+	angular.module('user.controller', ['user.service', 'user.lang', 'auth.directives', 'auth.service'])
+
+	.controller('UserController', ['UserLanguage', 'AuthService', function(UserLanguage, AuthService) {
+		this.lang = UserLanguage;
+		this.provider = AuthService.provider;
+	}])
+
+	.controller('UserDeleteController', ['$scope', '$timeout', 'UserService', 'UserLanguage', 'AuthService', function($scope, $timeout, UserService, UserLanguage, AuthService) {
+		this.lang = UserLanguage;
+
+		this.provider = AuthService.provider;
+		if (this.provider === 'password') {
+			this.email = AuthService.auth.password.email;
+		}
+
+		this.user = {
+			email: '',
+			pass: ''
+		};
+
+		this.working = false;
+		this.error = {};
+		this.success = false;
+
+		var self = this;
+
+		var errorsToView = [
+			// Email
+			'INVALID_EMAIL',
+			'INVALID_USER',
+
+			// Password
+			'INVALID_PASSWORD',
+
+			// Common
+			'NETWORK_ERROR'
+		];
+
+		var errorHandler = function(error) {
+			if (error) {
+				//TODO: Some of the errors from errorsToView might contain details that should be logged
+				if (errorsToView.indexOf(error.code) === -1) {
+					//TODO: Log
+					console.error('UserDeleteController [errorHandler]: Error');
+					console.error('Code: ' + error.code);
+					console.error('Message: ' + error.message);
+
+					self.error.code = 'GENERAL_ERROR';
+				} else {
+					self.error.code = error.code;
+				}
+			}
+		};
+
+		this.submit = function(valid) {
+			if (!valid) {
+				return;
+			}
+
+			this.working = true;
+			this.error = {};
+			this.success = false;
+
+			UserService.delete()
+			.then(function() {
+				if (self.provider === 'password') {
+					return AuthService.delete(AuthService.auth.password.email, self.user.pass);
+				}
+			})
+			.then(function() {
+				// Clear form
+				self.user = {};
+				self.success = true;
+			})
+			.then(function() {
+				$timeout(AuthService.logout(), 2000);
+			})
+			.catch(function(error) {
+				errorHandler(error);
+			})
+			.finally(function() {
+				self.working = false;
+			});
+		};
+	}])
+
+	.controller('ChangePasswordController', ['$scope', '$timeout', 'UserLanguage', 'AuthService', function($scope, $timeout, UserLanguage, AuthService) {
+		this.lang = UserLanguage;
+
+		this.pass = {
+			oldPass: '',
+			newPass1: '',
+			newPass2: ''
+		};
+
+		this.working = false;
+		this.error = {};
+		this.success = false;
+
+		var self = this;
+
+		var errorsToView = [
+			// Password
+			'INVALID_PASSWORD',
+
+			// Common
+			'NETWORK_ERROR'
+		];
+
+		var errorHandler = function(error) {
+			if (error) {
+				//TODO: Some of the errors from errorsToView might contain details that should be logged
+				if (errorsToView.indexOf(error.code) === -1) {
+					//TODO: Log
+					console.error('ChangePasswordController [errorHandler]: Error');
+					console.error('Code: ' + error.code);
+					console.error('Message: ' + error.message);
+
+					self.error.code = 'GENERAL_ERROR';
+				} else {
+					self.error.code = error.code;
+				}
+			}
+		};
+
+		this.submit = function(valid) {
+			if (!valid) {
+				return;
+			}
+
+			this.working = true;
+			this.error = {};
+			this.success = false;
+
+			AuthService.changePassword(AuthService.auth.password.email, this.pass.oldPass, this.pass.newPass1)
+			.then(function() {
+				// Clear form
+				self.pass = {};
+				$scope.cpForm.$setUntouched();
+				$scope.cpForm.$setPristine();
+
+				self.success = true;
+				var successTimer = $timeout(function() {
+					self.success = false;
+				}, 5000);
+
+				$scope.$on('$destroy', function() {
+					$timeout.cancel(successTimer);
+				});
+			})
+			.catch(function(error) {
+				errorHandler(error);
+			})
+			.finally(function() {
+				self.working = false;
+			});
+		};
+	}]);
+
+}());
+(function () {
+	'use strict';
+
+	angular.module('user.lang', [])
+
+	.factory('UserLanguage', function() {
+		var strings = {
+			// Common
+			title: 'Account',
+
+			working: 'Working',
+			cancel: 'Cancel',
+			passwordReq: 'Enter a password',
+			passwordMin: 'The password must be at least 8 characters',
+			passwordInvalid: 'Invalid password',
+			networkError: 'Network error, try again',
+			generalError: 'An unexpected error occurred',
+
+			// Overview
+			subtitle: 'Overview',
+
+			// Delete account
+			delete: 'Delete account',
+			deletePrecaution: 'As a precaution, you have to enter your email and password to delete your account.',
+			deleteAfter: 'After your account have been deleted, you will be redirected to the login page.',
+			email: 'Email address',
+			pass: 'Password',
+			emailReq: 'Enter your email address',
+			emailLike: 'This does not look like an email address',
+			emailMatch: 'The entered email does not match the one you signed in with',
+			emailInvalid: 'Invalid email address',
+			userInvalid: 'This account does not exist',
+			deleteSuccess: 'Account deleted',
+
+			// Change password
+			change: 'Change password',
+			changePrecaution: 'As a precaution, you have to enter your current password.',
+			oldPass: 'Current password',
+			newPass1: 'New password',
+			newPass2: 'Confirm new password',
+			changeSuccess: 'Password changed'
+		};
+
+		return {
+			get: function(key) {
+				if (strings.hasOwnProperty(key)) {
+					return strings[key];
+				} else {
+					console.error('UserLanguage: Missing translation for: ' + key);
+					return 'Missing translation';
+				}
+			}
+		};
+	});
 
 }());
 (function() {
@@ -1327,7 +1633,7 @@
 
       return deferred.promise;
     };
-    
+
     var cloneLetters = function() {
       return FirebaseFactory.getOnce(base + 'simplelogin:14/letters')
       .then(function(letters) {
@@ -1374,6 +1680,13 @@
     };
 
     var service = {
+      delete: function() {
+        return load()
+        .then(function() {
+          return FirebaseFactory.delete(base + uid);
+        });
+      },
+
       getData: function() {
         return load()
         .then(function() {
@@ -1454,7 +1767,42 @@
 (function () {
   'use strict';
 
-  angular.module('user', ['user.service']);
+  angular.module('user', ['user.service', 'user.controller'])
+
+  .config(['$urlRouterProvider', '$stateProvider', function($urlRouterProvider, $stateProvider) {
+    $stateProvider
+    .state('user', {
+      abstract: true,
+      url: '/user',
+      template: '<div ui-view></div>',
+      contoller: function($state) {
+        $state.go('user.user');
+      },
+      resolve: {
+        requireAuth: ['requireAuth', function(requireAuth) {
+          return requireAuth();
+        }]
+      }
+    })
+    .state('user.user', {
+      url: '',
+      templateUrl: 'app/user/user.tpl.html',
+      controller: 'UserController',
+      controllerAs: 'userCtrl'
+    })
+    .state('user.delete', {
+      url: '/delete',
+      templateUrl: 'app/user/user.delete.tpl.html',
+      controller: 'UserDeleteController',
+      controllerAs: 'udCtrl'
+    })
+    .state('user.password', {
+      url: '/password',
+      templateUrl: 'app/user/user.password.tpl.html',
+      controller: 'ChangePasswordController',
+      controllerAs: 'cpCtrl'
+    });
+  }]);
 
 }());
 (function () {
@@ -1493,71 +1841,6 @@
       return $filter('ngMarkdown')(this.copyAsMarkdown(snippet));
     };
   }]);
-
-}());
-(function() {
-  'use strict';
-
-  angular.module('menu.controller', ['common', 'auth'])
-  .controller('MenuController', ['$state', '$modal', 'AuthService', 'loginState', function ($state, $modal, AuthService, loginState) {
-    this.name = '';
-
-    var self = this;
-    AuthService.watch(function(authData) {
-      if (authData) {
-        if (authData.provider === 'password') {
-          self.name = authData.password.email;
-        } else if (authData.provider === 'facebook' || authData.provider === 'twitter' || authData.provider === 'google') {
-          self.name = authData[authData.provider].displayName;
-        } else {
-          self.name = '';
-        }
-      } else {
-        self.name = '';
-      }
-    });
-
-    this.openAuth = function() {
-      if ($state.current.name !== loginState) {
-        $modal.open({
-          size: 'sm',
-          templateUrl: 'app/auth/auth.modal.tpl.html',
-          controller: 'AuthController',
-          controllerAs: 'authCtrl',
-          resolve: {
-            'auth': ['AuthService', function(AuthService) {
-              return AuthService.getAuth();
-            }],
-            'signup': function() {
-              return false;
-            }
-          }
-        });
-      }
-    };
-
-  }]);
-
-}());
-(function () {
-  'use strict';
-
-  angular.module('menu.directive', ['menu.controller'])
-  .directive('siteMenu', function() {
-    return {
-      restrict: 'E',
-      scope: true,
-      templateUrl: 'app/menu/menu.tpl.html',
-      controller: 'MenuController',
-      controllerAs: 'menuCtrl'
-    };
-  });
-
-}());
-(function () {
-  'use strict';
-
-  angular.module('menu', ['menu.directive', 'menu.controller']);
 
 }());
 //# sourceMappingURL=maps/app.js.map

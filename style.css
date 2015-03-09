@@ -71,8 +71,7 @@
   background: rgba(0, 0, 0, 0.8);
   border: 0;
 }
-#auth-form .form-group .form-sub {
-  text-align: center;
+.form-sub {
   margin-top: 10px;
 }
 #auth-form .auth-error {
