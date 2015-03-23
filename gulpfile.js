@@ -6,7 +6,6 @@ var gulp = require('gulp');
 var runSequence = require('run-sequence');
 var del = require('del');
 var jshint = require('gulp-jshint');
-var stylish = require('jshint-stylish');
 var templateCache = require('gulp-angular-templatecache');
 var changed = require('gulp-changed');
 var concat = require('gulp-concat');
@@ -36,8 +35,19 @@ var filterByExtension = function(extension){
 var onLessError = function(error) {
   notify.onError({
     title:    'Less',
-    subtitle: 'Failure!',
-    message:  'Error: <%= error.message %>',
+    subtitle: 'Failure',
+    message:  '<%= error.message %>',
+    sound:    'Beep'
+  })(error);
+
+  this.emit('end');
+};
+
+var onJsError = function(error) {
+  notify.onError({
+    title:    'JavaScript',
+    subtitle: 'Failure',
+    message:  '<%= error.message %>',
     sound:    'Beep'
   })(error);
 
@@ -135,13 +145,16 @@ gulp.task('lint', function() {
       // Don't show something if success
       return false;
     } else {
-      return 'JShint says to look in the terminal!';
+      return 'JShint: You got warnings';
     }
   }));
 });
 
 gulp.task('js', ['lint'], function() {
   return gulp.src(config.src.js)
+  .pipe(plumber({
+    errorHandler: onJsError
+  }))
   .pipe(ngAnnotate({
     single_quotes: true
   }))
